@@ -1,6 +1,12 @@
 // 🖼️ Default image for card cover
 export const DEFAULT_COVER_IMAGE = "/images/covers/default.png";
 
+// Base path for images resources
+export const BASE_PATH_IMAGE_RESOURCES = {
+  THEMES_PATH: "/images/themes/",
+  COVERS_PATH: "/images/covers/"
+}
+
 // 🎆 Victory animation
 export const FIREWORK_GIF = "/images/fireworks.gif";
 
@@ -55,24 +61,11 @@ export const SOUND_EFFECTS_GAME_RESULT = {
   EFFECT_GAME_OVER: "funeral",
 } as const;
 
-// 🃏 Card display settings by screen size
+// 🃏 Card display settings
 export const CARD_DISPLAY_SETTINGS = {
-  SMALL: {
-    CARD_WIDTH: 60,
-    CARD_GAP: 3,
-  },
-  MEDIUM: {
-    CARD_WIDTH: 70,
-    CARD_GAP: 4,
-  },
-  LARGE: {
-    CARD_WIDTH: 90,
-    CARD_GAP: 7,
-  },
-  // Constantes comunes a todos los tamaños
-  CARD_FLIP_ANIMATION_MS: 590,
-  CARD_PRESENTATION_DELAY_MS: 1000,
-} as const;
+  CARD_FLIP_ANIMATION_MS: 590, // duration of card flip animation in milliseconds
+  CARD_PRESENTATION_DELAY_MS: 1000, // delay before revealing cards face-up at game start
+};
 
 // ⏳ Delay for memorization phase (cards face-up) by difficulty
 export const DELAY_MEMORIZATION_PHASE = {
@@ -97,10 +90,3 @@ export const DIFFICULTY_LEVELS = {
   MEDIUM: "MEDIUM",
   HARD: "HARD",
 } as const;
-
-// 🎚️ Allowed total cards based on screen width
-export const TOTAL_CARDS_BY_BREAKPOINT = {
-  SMALL: [20, 16, 12, 10], // ≤ 539px
-  MEDIUM: [30, 28, 24, 20, 18, 16, 14, 12, 10], // 540px - 2172px
-  LARGE: Array.from({ length: 11 }, (_, i) => 30 - i * 2), // ≥ 1024px: generate decreasing even numbers from 30 to 10
-};

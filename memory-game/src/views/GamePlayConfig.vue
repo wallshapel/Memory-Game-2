@@ -10,8 +10,12 @@
                         label="Select Difficulty" outlined dense hide-details="auto" class="mb-4" />
 
                     <!-- Number of Cards -->
-                    <v-select v-model="store.totalCards" :items="allowedTotalCards" label="Number of Cards" outlined
-                        dense hide-details="auto" class="mb-6" />
+                    <v-slider v-model="store.totalCards" :min="10" :max="30" step="2" label="Number of Cards"
+                        hide-details thumb-label class="mb-6">
+                        <template #append>
+                            <span class="ml-3 font-weight-medium">{{ store.totalCards }}</span>
+                        </template>
+                    </v-slider>
 
                     <!-- Theme -->
                     <div class="mb-4">
@@ -23,7 +27,7 @@
                                 <v-card :elevation="store.theme === theme.value.toUpperCase() ? 12 : 2"
                                     :class="store.theme === theme.value.toUpperCase() ? 'border border-primary bg-grey-lighten-4' : ''"
                                     @click="store.setTheme(theme.value.toUpperCase() as Uppercase<ThemeLiteral>)">
-                                    <v-img :src="`/images/themes/${theme.value}.png`" height="80" class="mb-2"
+                                    <v-img :src="`${BASE_PATH_IMAGE_RESOURCES.THEMES_PATH}${theme.value}.png`" height="80" class="mb-2"
                                         contain />
                                     <span class="text-caption">
                                         {{ theme.label }}
@@ -50,14 +54,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
-import { TOTAL_CARDS_BY_BREAKPOINT } from '../constants/assets'
+import { BASE_PATH_IMAGE_RESOURCES } from '../constants/assets'
 
 const router = useRouter()
 const store = usePlayerStore()
-const screenWidth = ref(window.innerWidth);
 
 const difficulties = [
     { label: 'Easy', value: 'EASY' },
@@ -65,25 +68,13 @@ const difficulties = [
     { label: 'Hard', value: 'HARD' },
 ]
 
-type ThemeLiteral = typeof themeOptions[number]['value']; // "animals" | "flags" | "rickandmorty"
-
 const themeOptions = [
-    { value: 'animals', label: 'Animals' },
-    { value: 'flags', label: 'Flags' },
-    { value: 'rickandmorty', label: 'Rick and Morty' }
+  { value: 'animals', label: 'Animals' },
+  { value: 'flags', label: 'Flags' },
+  { value: 'rickandmorty', label: 'Rick and Morty' }
 ] as const;
 
-const allowedTotalCards = computed(() => {
-  const width = screenWidth.value;
-
-  if (width <= 539) return TOTAL_CARDS_BY_BREAKPOINT.SMALL;
-  if (width <= 2172) return TOTAL_CARDS_BY_BREAKPOINT.MEDIUM;
-  return TOTAL_CARDS_BY_BREAKPOINT.LARGE;
-})
-
-const handleResize = () => {
-    screenWidth.value = window.innerWidth;
-};
+type ThemeLiteral = typeof themeOptions[number]['value']; // "animals" | "flags" | "rickandmorty"
 
 // ⎋ ESC to return to config
 const handleEscape = (e: KeyboardEvent) => {
@@ -92,12 +83,10 @@ const handleEscape = (e: KeyboardEvent) => {
 }
 
 onMounted(() => {
-    window.addEventListener('resize', handleResize);
     window.addEventListener('keydown', handleEscape)
 })
 
 onBeforeUnmount(() => {
-    window.removeEventListener('resize', handleResize);
     window.removeEventListener('keydown', handleEscape)
 })
 </script>

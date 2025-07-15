@@ -7,71 +7,43 @@
 <template>
     <div v-if="game.cards.length > 0" :style="gridStyle"
         :class="{ 'disable-mouse': store.controlMethod === 'keyboard' }">
-        <Card v-for="(card, index) in game.cards" :key="card.id" :card="card" :width="cardWidth" :height="cardHeight"
+        <Card v-for="(card, index) in game.cards" :key="card.id" :card="card"
             :isFocused="store.controlMethod === 'keyboard' && game.cardsAreReady && index === game.focusedIndex" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
+import { computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useGameStore } from '../store/gameStore'
 import { usePlayerStore } from '../store/playerStore'
 import Card from './Card.vue'
+import { CARD_DISPLAY_SETTINGS } from '../constants/assets'
 
 const game = useGameStore()
 const store = usePlayerStore()
 
-const cardWidth = ref(50)
-const cardHeight = ref(75)
-
-function updateCardSize() {
-    const width = window.innerWidth
-    if (width <= 539) {
-        cardWidth.value = 50
-        cardHeight.value = 75
-    } else if (width <= 640) {
-        cardWidth.value = 70
-        cardHeight.value = 105
-    } else if (width <= 739) {
-        cardWidth.value = 80
-        cardHeight.value = 120
-    } else {
-        cardWidth.value = 90
-        cardHeight.value = 135
-    }
-}
-
 function calculateGrid(count: number): { columns: number; rows: number } {
-    let bestCols = count
-    let bestRows = 1
-    let minDiff = count
-    let minArea = Infinity
-
-    for (let rows = 1; rows <= count; rows++) {
-        const cols = Math.ceil(count / rows)
-        const area = cols * rows
-        const diff = Math.abs(cols - rows)
-
-        if (
-            diff < minDiff ||
-            (diff === minDiff && area < minArea)
-        ) {
-            bestCols = cols
-            bestRows = rows
-            minDiff = diff
-            minArea = area
-        }
+    if (Number.isInteger(Math.sqrt(count))) {
+        const side = Math.sqrt(count)
+        return { columns: side, rows: side }
     }
 
-    return { columns: bestCols, rows: bestRows }
+    const upper = Math.ceil(Math.sqrt(count))
+    const lower = Math.floor(Math.sqrt(count))
+
+    for (let cols = upper; cols <= count; cols++) {
+        if (count % cols === 0) return { columns: cols, rows: count / cols }
+    }
+
+    return { columns: upper, rows: lower }
 }
 
 const gridStyle = computed(() => {
     const grid = calculateGrid(game.cards.length)
     return {
         display: 'grid',
-        gridTemplateColumns: `repeat(${grid.columns}, ${cardWidth.value}px)`,
-        gap: '8px',
+        gridTemplateColumns: `repeat(${ grid.columns }, ${ CARD_DISPLAY_SETTINGS.CARD_WIDTH }px)`,
+        gap: `${ CARD_DISPLAY_SETTINGS.CARD_GAP } px`,
     }
 })
 
@@ -140,13 +112,9 @@ onMounted(() => {
                 game.focusedIndex = -1
         }
     )
-
-    updateCardSize()
-    window.addEventListener('resize', updateCardSize)
 })
 
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleKeyDown)
-    window.removeEventListener('resize', updateCardSize)
 })
 </script>

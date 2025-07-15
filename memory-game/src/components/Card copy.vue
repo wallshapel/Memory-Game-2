@@ -1,4 +1,11 @@
 <style scoped>
+.card {
+    width: 60px;
+    height: 90px;
+    perspective: 600px;
+    margin: 1px;
+}
+
 .card-inner {
     width: 100%;
     height: 100%;
@@ -59,8 +66,7 @@
 
 <template>
     <div class="card" :class="{ flipped: card.flipped, focused: isFocused }" @mouseenter="handleHover"
-        @click="handleClick"
-        :style="{ width: props.width + 'px', height: props.height + 'px', perspective: '600px', margin: '1px' }">
+        @click="handleClick">
         <div class="card-inner">
             <div class="card-front">
                 <img :src="coverImage" alt="Cover" />
@@ -90,10 +96,7 @@ const props = defineProps<{
         flipped: boolean
         blocked: boolean
     },
-    isFocused: boolean,
-    width: number,
-    height: number
-
+    isFocused: boolean
 }>()
 
 const handleHover = () => {
@@ -110,7 +113,7 @@ const handleClick = () => {
 
 // 🎯 Detect if this letter was focused by keyboard
 watch(() => props.isFocused, (focused) => {
-    if (focused && !props.card.flipped && !game.hasLost)
+    if (focused && !props.card.flipped && !game.hasLost) 
         store.playEffect('over')
 })
 
