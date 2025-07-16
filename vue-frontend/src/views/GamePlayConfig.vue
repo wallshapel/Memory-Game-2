@@ -24,21 +24,21 @@
                         </label>
                         <v-row dense>
                             <v-col v-for="theme in themeOptions" :key="theme.value" cols="4" class="text-center">
-                                <v-card :elevation="store.theme === theme.value.toUpperCase() ? 12 : 2"
-                                    :class="store.theme === theme.value.toUpperCase() ? 'border border-primary bg-grey-lighten-4' : ''"
-                                    @click="store.setTheme(theme.value.toUpperCase() as Uppercase<ThemeLiteral>)">
-                                    <v-img :src="`${BASE_PATH_IMAGE_RESOURCES.THEMES_PATH}${theme.value}.png`" height="80" class="mb-2"
-                                        contain />
+                                <v-card :elevation="store.theme === theme.value ? 12 : 2"
+                                    :class="store.theme === theme.value ? 'border border-primary bg-grey-lighten-4' : ''"
+                                    @click="store.setTheme(theme.value)">
+                                    <v-img
+                                        :src="`${BASE_PATH_IMAGE_RESOURCES.THEMES_PATH}${theme.label.toLowerCase()}.png`"
+                                        height="80" class="mb-2" contain />
                                     <span class="text-caption">
                                         {{ theme.label }}
                                     </span>
 
-                                    <v-icon v-if="store.theme === theme.value.toUpperCase()" color="primary" size="18"
+                                    <v-icon v-if="store.theme === theme.value" color="primary" size="18"
                                         style="position: absolute; top: 4px; right: 6px;">
                                         mdi-check-circle
                                     </v-icon>
                                 </v-card>
-
                             </v-col>
                         </v-row>
                     </div>
@@ -57,29 +57,26 @@
 import { onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
-import { BASE_PATH_IMAGE_RESOURCES } from '../constants/assets'
+import { BASE_PATH_IMAGE_RESOURCES, GAME_THEMES, DIFFICULTY_LEVELS, type GameThemeLiteral, type DifficultyLiteral } from '../constants/assets'
 
 const router = useRouter()
 const store = usePlayerStore()
 
-const difficulties = [
-    { label: 'Easy', value: 'EASY' },
-    { label: 'Medium', value: 'MEDIUM' },
-    { label: 'Hard', value: 'HARD' },
-]
+// 🎯 Build difficulty list from DIFFICULTY_LEVELS
+const difficulties = Object.entries(DIFFICULTY_LEVELS).map(([value, label]) => ({
+    value: Number(value) as DifficultyLiteral, // ensures literal type 0 | 1 | 2
+    label: label.charAt(0) + label.slice(1).toLowerCase(),
+}))
 
-const themeOptions = [
-  { value: 'animals', label: 'Animals' },
-  { value: 'flags', label: 'Flags' },
-  { value: 'rickandmorty', label: 'Rick and Morty' }
-] as const;
-
-type ThemeLiteral = typeof themeOptions[number]['value']; // "animals" | "flags" | "rickandmorty"
+// 🎨 Build theme options from GAME_THEMES
+const themeOptions = Object.entries(GAME_THEMES).map(([value, label]) => ({
+    value: Number(value) as GameThemeLiteral, // ensures literal type 0 | 1 | 2
+    label: label.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+}))
 
 // ⎋ ESC to return to config
 const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape')
-        router.push('/config')
+    if (e.key === 'Escape') router.push('/config')
 }
 
 onMounted(() => {

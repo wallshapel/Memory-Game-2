@@ -30,10 +30,10 @@
                         🎮 New Game
                     </v-list-item>
                     <v-list-item @click="toggleMusic" class="option-item">
-                        {{ store.musicMuted ? '🎵 Music' : '🔇 Music' }}
+                        {{ audio.musicMuted ? '🎵 Music' : '🔇 Music' }}
                     </v-list-item>
                     <v-list-item @click="toggleEffects" class="option-item">
-                        {{ store.effectsMuted ? '🔈Effects' : '🔕 Effects' }}
+                        {{ audio.effectsMuted ? '🔈Effects' : '🔕 Effects' }}
                     </v-list-item>
                     <v-list-item @click="onExit" class="option-item">
                         🚪 Exit
@@ -47,8 +47,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { usePlayerStore } from '../store/playerStore'
 import { useGameStore } from '../store/gameStore'
+import { useAudioStore } from '../store/audioStore'
 
 const game = useGameStore()
 
@@ -62,7 +62,7 @@ const close = () => {
 }
 
 const router = useRouter()
-const store = usePlayerStore()
+const audio = useAudioStore()
 
 const onNewGame = () => {
     game.resetGame()
@@ -71,14 +71,14 @@ const onNewGame = () => {
 
 const onExit = () => {
     game.clearGame()
-    router.push('/')
+    router.push('/menu')
 }
 
 const toggleMusic = () => {
-    store.setMusicMuted(!store.musicMuted)
+    audio.setMusicMuted(!audio.musicMuted)
 }
 
 const toggleEffects = () => {
-    store.setEffectsMuted(!store.effectsMuted)
+    audio.setEffectsMuted(!audio.effectsMuted)
 }
 </script>

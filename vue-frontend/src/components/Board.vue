@@ -16,10 +16,13 @@
 import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useGameStore } from '../store/gameStore'
 import { usePlayerStore } from '../store/playerStore'
+import { useAudioStore } from '../store/audioStore'
 import Card from './Card.vue'
+import { GAME_EFFECTS } from '../constants/assets'
 
 const game = useGameStore()
 const store = usePlayerStore()
+const audio = useAudioStore()
 
 const cardWidth = ref(50)
 const cardHeight = ref(75)
@@ -116,7 +119,7 @@ function handleKeyDown(e: KeyboardEvent) {
                 !currentCard.blocked &&
                 !currentCard.matched
             ) {
-                store.playEffect('select')
+                audio.playEffect(GAME_EFFECTS.EFFECT_SELECT)
                 game.handleCardClick(currentCard)
             }
             return

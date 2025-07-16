@@ -1,20 +1,3 @@
-<template>
-    <div class="scoreboard">
-        <div class="score success">
-            ✅ {{ game.successCount }}
-        </div>
-        <div class="score fail">
-            ❌ {{ game.failCount }}
-        </div>
-    </div>
-</template>
-
-<script setup lang="ts">
-import { useGameStore } from '../store/gameStore'
-
-const game = useGameStore()
-</script>
-
 <style scoped>
 .scoreboard {
     display: flex;
@@ -33,3 +16,20 @@ const game = useGameStore()
     color: red;
 }
 </style>
+
+<template>
+    <div class="scoreboard">
+        <div class="score success">
+            ✅ {{ game.successCount }}
+        </div>
+        <div class="score fail">
+            ❌ {{ game.failCount }}
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { useGameStore } from '../store/gameStore'
+
+const game = useGameStore()
+</script>

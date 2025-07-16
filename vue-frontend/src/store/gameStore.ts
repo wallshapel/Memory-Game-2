@@ -1,21 +1,22 @@
 import { defineStore } from "pinia";
 import { ref, watch, computed } from "vue";
 import { usePlayerStore } from "./playerStore";
+import { useAudioStore } from "./audioStore";
 import type { CardData } from "../types/CardData";
 import type { ThemeData } from "../types/ThemeData";
 import {
   CARD_DISPLAY_SETTINGS,
   DELAY_MEMORIZATION_PHASE,
   RESULT_MODAL_DELAY_MS,
-  SOUND_EFFECTS_HIT_FAILS,
-  SOUND_EFFECTS_GAME_RESULT,
-  DIFFICULTY_LEVELS
+  GAME_EFFECTS,
+  GAME_SCORE_MUSIC,
 } from "../constants/assets";
 import { shuffleArray } from "../utils/shuffleArray";
 import { themeFetchers } from "../api/themeFetchers";
 
 export const useGameStore = defineStore("game", () => {
   const playerStore = usePlayerStore();
+  const audioStore = useAudioStore();
   const showSettingsModal = ref(false);
 
   const cards = ref<CardData[]>([]);
@@ -43,11 +44,11 @@ export const useGameStore = defineStore("game", () => {
   const maxFails = computed(() => {
     const pairs = playerStore.totalCards / 2;
     switch (playerStore.difficulty) {
-      case DIFFICULTY_LEVELS.EASY:
+      case 0: // EASY
         return pairs + 2;
-      case DIFFICULTY_LEVELS.MEDIUM:
+      case 1: // MEDIUM
         return pairs;
-      case DIFFICULTY_LEVELS.HARD:
+      case 2: // HARD
         return pairs - 2;
       default:
         return pairs;
@@ -55,6 +56,9 @@ export const useGameStore = defineStore("game", () => {
   });
 
   async function initializeGame() {
+    audioStore.stopAllAudio();
+    audioStore.playGameMusicLoop();
+
     cards.value = [];
     cardsAreReady.value = false;
 
@@ -72,7 +76,7 @@ export const useGameStore = defineStore("game", () => {
       const theme = playerStore.theme;
       const fetcher = themeFetchers[theme];
 
-      if (!fetcher) 
+      if (!fetcher)
         throw new Error(`No fetcher available for theme "${theme}"`);
 
       const needed = playerStore.totalCards / 2;
@@ -101,12 +105,9 @@ export const useGameStore = defineStore("game", () => {
       cards.value.forEach((card) => (card.flipped = true));
 
       const delayMap = {
-        [DIFFICULTY_LEVELS.EASY]:
-          DELAY_MEMORIZATION_PHASE.MEMORIZATION_DELAY_EASY,
-        [DIFFICULTY_LEVELS.MEDIUM]:
-          DELAY_MEMORIZATION_PHASE.MEMORIZATION_DELAY_MEDIUM,
-        [DIFFICULTY_LEVELS.HARD]:
-          DELAY_MEMORIZATION_PHASE.MEMORIZATION_DELAY_HARD,
+        0: DELAY_MEMORIZATION_PHASE.MEMORIZATION_DELAY_EASY,
+        1: DELAY_MEMORIZATION_PHASE.MEMORIZATION_DELAY_MEDIUM,
+        2: DELAY_MEMORIZATION_PHASE.MEMORIZATION_DELAY_HARD,
       };
 
       const delay = delayMap[playerStore.difficulty];
@@ -136,8 +137,8 @@ export const useGameStore = defineStore("game", () => {
     focusedIndex.value = 0;
     cardsAreReady.value = false;
 
-    playerStore.stopAllAudio();
-    playerStore.playMusic();
+    audioStore.stopAllAudio();
+    audioStore.playMusic();
 
     resetChronometer();
     initializeGame();
@@ -166,12 +167,12 @@ export const useGameStore = defineStore("game", () => {
       secondCard.value.matched = true;
       firstCard.value.blocked = true;
       secondCard.value.blocked = true;
-      playerStore.playEffect(SOUND_EFFECTS_HIT_FAILS.EFFECT_SUCCESS);
+      audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS);
       successCount.value++;
       resetSelection();
       checkWin();
     } else {
-      playerStore.playEffect(SOUND_EFFECTS_HIT_FAILS.EFFECT_ERROR);
+      audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
       failCount.value++;
       setTimeout(() => {
         firstCard.value!.flipped = false;
@@ -188,7 +189,8 @@ export const useGameStore = defineStore("game", () => {
     if (matchedAll) {
       hasWon.value = true;
       stopChronometer();
-      playerStore.playEffect(SOUND_EFFECTS_GAME_RESULT.EFFECT_VICTORY);
+      audioStore.stopAllAudio();
+      audioStore.playEffect(GAME_SCORE_MUSIC.MUSIC_VICTORY);
       setTimeout(() => {
         showResultModal.value = true;
       }, RESULT_MODAL_DELAY_MS);
@@ -200,7 +202,8 @@ export const useGameStore = defineStore("game", () => {
     if (newVal >= maxFails.value && !hasLost.value && !hasWon.value) {
       hasLost.value = true;
       stopChronometer();
-      playerStore.playEffect(SOUND_EFFECTS_GAME_RESULT.EFFECT_GAME_OVER);
+      audioStore.stopAllAudio();
+      audioStore.playEffect(GAME_SCORE_MUSIC.MUSIC_GAME_OVER);
 
       resultModalTimeout = setTimeout(() => {
         showResultModal.value = true;
@@ -247,8 +250,8 @@ export const useGameStore = defineStore("game", () => {
     stopChronometer();
     milliseconds.value = 0;
 
-    playerStore.stopAllAudio();
-    playerStore._wasBackgroundPlaying = false;
+    audioStore.stopAllAudio();
+    audioStore._wasBackgroundPlaying = false;
   }
 
   const formattedTime = computed(() => {

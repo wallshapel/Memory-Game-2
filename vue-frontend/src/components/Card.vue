@@ -76,10 +76,12 @@
 import { computed, watch } from 'vue'
 import { useGameStore } from '../store/gameStore'
 import { usePlayerStore } from '../store/playerStore'
-import { DEFAULT_COVER_IMAGE } from '../constants/assets'
+import { useAudioStore } from '../store/audioStore'
+import { BASE_PATH_IMAGE_RESOURCES, DEFAULT_COVER_IMAGE, GAME_EFFECTS } from '../constants/assets'
 
 const game = useGameStore()
 const store = usePlayerStore()
+const audio = useAudioStore()
 
 const props = defineProps<{
     card: {
@@ -98,12 +100,12 @@ const props = defineProps<{
 
 const handleHover = () => {
     if (!props.card.flipped && !game.hasLost)
-        store.playEffect('over')
+        audio.playEffect(GAME_EFFECTS.EFFECT_OVER)
 }
 
 const handleClick = () => {
     if (!props.card.flipped && !game.hasLost) {
-        store.playEffect('select')
+        audio.playEffect(GAME_EFFECTS.EFFECT_SELECT)
         game.handleCardClick(props.card)
     }
 }
@@ -111,12 +113,12 @@ const handleClick = () => {
 // 🎯 Detect if this letter was focused by keyboard
 watch(() => props.isFocused, (focused) => {
     if (focused && !props.card.flipped && !game.hasLost)
-        store.playEffect('over')
+        audio.playEffect(GAME_EFFECTS.EFFECT_OVER)
 })
 
 const coverImage = computed(() => {
     if (store.coverType === 'uploaded' && store.coverFile)
         return URL.createObjectURL(store.coverFile)
-    return DEFAULT_COVER_IMAGE
+    return `${BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${DEFAULT_COVER_IMAGE}`
 })
 </script>

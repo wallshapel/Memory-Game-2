@@ -10,7 +10,7 @@
           </v-btn>
 
           <v-btn block class="mb-4" color="secondary" @click="handleOptions">
-            ⚙️ Options
+            ⚙️ Settings
           </v-btn>
 
           <!-- Modal profile -->
@@ -24,20 +24,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent, onMounted, nextTick } from 'vue'
+import { ref, defineAsyncComponent, onMounted, nextTick, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
+import { useAudioStore } from '../store/audioStore'
 
 const AlertModal = defineAsyncComponent(() => import('../components/AlertModal.vue'))
 
 const router = useRouter()
-const store = usePlayerStore()
+const playerStore = usePlayerStore()
+const audioStore = useAudioStore()
+
 const showModal = ref(false)
 const playButton = ref<any>(null)
-const playerStore = usePlayerStore()
 
 const handlePlay = () => {
-  if (!store.name.trim())
+  if (!playerStore.name.trim())
     showModal.value = true
   else
     router.push('/game')
@@ -53,9 +55,27 @@ const goToProfile = () => {
 }
 
 onMounted(() => {
+  console.log('[🏁 MainMenu mounted]');
+
+  // 🛑 Important: stop any previous config music, gameplay, etc.
+  audioStore.stopAllAudio();
+
   nextTick(() => {
-    playButton.value?.$el?.focus()
-  })
-   playerStore.playMusic()
-})
+    playButton.value?.$el?.focus();
+  });
+
+  const file = audioStore.getMusicFileFromKey(audioStore.musicTrack);
+
+  const audio = audioStore.playAudio(file, "music", {
+    loop: true,
+    volume: audioStore.musicVolume / 100,
+  });
+
+  audioStore.bgMusicInstance = audio;
+});
+
+onBeforeUnmount(() => {
+  audioStore.bgMusicInstance?.pause();
+  audioStore.bgMusicInstance = null;
+});
 </script>

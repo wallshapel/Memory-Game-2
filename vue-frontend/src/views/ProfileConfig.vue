@@ -45,10 +45,8 @@ const saveName = () => {
     store.setName(name.value.trim())
     saved.value = true
 
-    // ✅ Clear any existing timeout before setting a new one
-    if (saveTimeoutId) {
+    if (saveTimeoutId)
         clearTimeout(saveTimeoutId)
-    }
 
     saveTimeoutId = setTimeout(() => {
         saved.value = false
@@ -56,10 +54,25 @@ const saveName = () => {
     }, 2000)
 }
 
+// ␛ ESC to go back to config
 const handleEscape = (e: KeyboardEvent) => {
     if (e.key === 'Escape')
         router.push('/config')
 }
+
+// ⏎ Pressing Enter is equivalent to saving
+const handleEnter = (event: KeyboardEvent) => {
+    if (isNameValid.value) {
+        event.preventDefault()
+        saveName()
+    }
+}
+
+// ✅ Name must be 1–18 characters long
+const isNameValid = computed(() => {
+    const trimmed = name.value.trim()
+    return trimmed.length > 0 && trimmed.length <= 18
+})
 
 onMounted(() => {
     nameInput.value?.focus()
@@ -68,25 +81,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleEscape)
-
-    // 🧼 Kill pending timeout
-    if (saveTimeoutId) {
-        clearTimeout(saveTimeoutId)
-        saveTimeoutId = null
-    }
+    if (saveTimeoutId) clearTimeout(saveTimeoutId)
 })
-
-// 🔐 Requires between 1 and 18 characters
-const isNameValid = computed(() => {
-    const trimmed = name.value.trim()
-    return trimmed.length > 0 && trimmed.length <= 18
-})
-
-// ⏎ Pressing enter is equivalent to saving
-const handleEnter = (event: KeyboardEvent) => {
-    if (isNameValid.value) {
-        event.preventDefault()
-        saveName()
-    }
-}
 </script>

@@ -49,19 +49,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, defineAsyncComponent, watch, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
+import { BASE_PATH_IMAGE_RESOURCES, DEFAULT_COVER_IMAGE } from '../constants/assets'
+
 const AlertModal = defineAsyncComponent(() => import('../components/AlertModal.vue'))
 
 const router = useRouter()
 const store = usePlayerStore()
 
-const defaultImage = '/images/covers/default.png'
+const defaultImage = `${BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${DEFAULT_COVER_IMAGE}`
 const uploadedUrl = ref<string | null>(store.coverFile ? URL.createObjectURL(store.coverFile) : null)
 const showError = ref(false)
 
-// Preview updates automatically if a new file is loaded from store
+onBeforeUnmount(() => {
+    window.removeEventListener('keydown', handleEscape)
+})
+
+// ⎋ ESC to return to config
+const handleEscape = (e: KeyboardEvent) => {
+    if (e.key === 'Escape')
+        router.push('/config')
+}
+
+// 🎨 Preview update
 watch(
     () => store.coverFile,
     (file) => {
@@ -84,18 +96,4 @@ const handleFile = (files: File[]) => {
     store.setCoverFile(selected)
     store.setCoverType('uploaded')
 }
-
-// ⎋ ESC to return to config
-const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape')
-        router.push('/config')
-}
-
-onMounted(() => {
-    window.addEventListener('keydown', handleEscape)
-})
-
-onBeforeUnmount(() => {
-    window.removeEventListener('keydown', handleEscape)
-})
 </script>

@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { ref, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
-import { usePlayerStore } from '../store/playerStore'
+import { useAudioStore } from '../store/audioStore'
 import { useGameStore } from '../store/gameStore'
 const GameSettingsModal = defineAsyncComponent(() => import('../components/GameSettingsModal.vue'))
 import Chronometer from '../components/Chronometer.vue'
@@ -38,7 +38,7 @@ import Scoreboard from '../components/Scoreboard.vue'
 const GameResultModal = defineAsyncComponent(() => import('../components/GameResultModal.vue'))
 
 const chronometerRef = ref()
-const store = usePlayerStore()
+const audio = useAudioStore()
 const game = useGameStore()
 
 onMounted(() => {
@@ -46,8 +46,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  store.stopAllAudio()
-  store.resumeMusicIfWasPlaying()
+  audio.stopAllAudio()
+  audio.resumeMusicIfWasPlaying()
   game.clearGame()
   game.showSettingsModal = false
   game.resetChronometer()

@@ -54,10 +54,10 @@ const handleRestart = () => {
 const handleExit = () => {
     game.clearGame()
     game.showResultModal = false
-    router.push('/')
+    router.push('/menu')
 }
 
-// 👉 Auto-focus restart/try again button when modal opens
+// Auto-focus restart/try again button when modal opens
 watch(
     () => game.showResultModal,
     (visible) => {
