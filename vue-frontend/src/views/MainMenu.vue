@@ -5,11 +5,12 @@
         <v-card class="pa-6 text-center" max-width="400" width="100%">
           <h1 class="text-h4 font-weight-bold mb-6">Memory Game</h1>
 
-          <v-btn ref="playButton" block class="mb-4" color="primary" @click="handlePlay">
+          <v-btn ref="playButton" block class="mb-4" color="primary" @click="handlePlay" @mouseenter="handleHover(0)">
             ▶️ Play
           </v-btn>
 
-          <v-btn block class="mb-4" color="secondary" @click="handleOptions">
+          <v-btn ref="settingsButton" block class="mb-4" color="secondary" @click="handleOptions"
+            @mouseenter="handleHover(1)">
             ⚙️ Settings
           </v-btn>
 
@@ -28,6 +29,7 @@ import { ref, defineAsyncComponent, onMounted, nextTick, onBeforeUnmount } from 
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
+import { GAME_EFFECTS } from '../constants/assets'
 
 const AlertModal = defineAsyncComponent(() => import('../components/AlertModal.vue'))
 
@@ -37,8 +39,13 @@ const audioStore = useAudioStore()
 
 const showModal = ref(false)
 const playButton = ref<any>(null)
+const settingsButton = ref<any>(null)
+
+const buttons = [playButton, settingsButton]
+let focusedIndex = 0
 
 const handlePlay = () => {
+  audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
   if (!playerStore.name.trim())
     showModal.value = true
   else
@@ -46,7 +53,14 @@ const handlePlay = () => {
 }
 
 const handleOptions = () => {
+  audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
   router.push('/config')
+}
+
+const handleHover = (index: number) => {
+  focusedIndex = index
+  buttons[focusedIndex].value?.$el?.focus()
+  audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
 }
 
 const goToProfile = () => {
@@ -54,28 +68,47 @@ const goToProfile = () => {
   router.push('/config/profile')
 }
 
-onMounted(() => {
-  console.log('[🏁 MainMenu mounted]');
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'ArrowDown') {
+    focusedIndex = (focusedIndex + 1) % buttons.length
+    buttons[focusedIndex].value?.$el?.focus()
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
+    e.preventDefault()
+  } else if (e.key === 'ArrowUp') {
+    focusedIndex = (focusedIndex - 1 + buttons.length) % buttons.length
+    buttons[focusedIndex].value?.$el?.focus()
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
+    e.preventDefault()
+  } else if (e.key === 'Enter') {
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
+    buttons[focusedIndex].value?.$el?.click()
+    e.preventDefault()
+  }
+}
 
-  // 🛑 Important: stop any previous config music, gameplay, etc.
-  audioStore.stopAllAudio();
+onMounted(() => {
+  audioStore.stopAllAudio()
 
   nextTick(() => {
-    playButton.value?.$el?.focus();
-  });
+    focusedIndex = 0
+    playButton.value?.$el?.focus()
+  })
 
-  const file = audioStore.getMusicFileFromKey(audioStore.musicTrack);
+  const file = audioStore.getMusicFileFromKey(audioStore.musicTrack)
 
   const audio = audioStore.playAudio(file, "music", {
     loop: true,
     volume: audioStore.musicVolume / 100,
-  });
+  })
 
-  audioStore.bgMusicInstance = audio;
-});
+  audioStore.bgMusicInstance = audio
+
+  window.addEventListener('keydown', handleKeydown)
+})
 
 onBeforeUnmount(() => {
-  audioStore.bgMusicInstance?.pause();
-  audioStore.bgMusicInstance = null;
-});
+  window.removeEventListener('keydown', handleKeydown)
+  audioStore.bgMusicInstance?.pause()
+  audioStore.bgMusicInstance = null
+})
 </script>

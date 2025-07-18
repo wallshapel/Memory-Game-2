@@ -5,6 +5,7 @@
                 <h1 class="text-h5 mb-6">Card Back Cover</h1>
 
                 <v-card class="pa-6" width="100%" max-width="500" rounded="xl">
+                    <!-- Cover Options -->
                     <div class="mb-4">
                         <label class="text-subtitle-1 font-weight-medium mb-2 d-block text-center">
                             Select Cover
@@ -32,15 +33,18 @@
                         </v-row>
                     </div>
 
-                    <v-file-input accept="image/png" label="Upload Custom Cover (.png, max 5MB)"
+                    <!-- Upload Control -->
+                    <v-file-input ref="fileInput" accept="image/png" label="Upload Custom Cover (.png, max 5MB)"
                         @update:modelValue="handleFile" prepend-icon="mdi-upload" outlined dense hide-details
                         class="mb-4" />
 
-                    <v-btn class="mt-6" color="secondary" @click="router.push('/config')" block>
+                    <!-- Back Button -->
+                    <v-btn ref="backBtn" class="mt-6" color="secondary" @click="handleBack" block>
                         ⬅ Back to Config
                     </v-btn>
                 </v-card>
 
+                <!-- Error Modal -->
                 <AlertModal v-model="showError" title="Invalid File" message="Only .png files under 5MB are allowed."
                     actionLabel="OK" @confirm="showError = false" />
             </v-container>
@@ -49,38 +53,57 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent, watch, onBeforeUnmount } from 'vue'
+import { ref, defineAsyncComponent, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
-import { BASE_PATH_IMAGE_RESOURCES, DEFAULT_COVER_IMAGE } from '../constants/assets'
+import { useAudioStore } from '../store/audioStore'
+import { BASE_PATH_IMAGE_RESOURCES, DEFAULT_COVER_IMAGE, GAME_EFFECTS } from '../constants/assets'
 
 const AlertModal = defineAsyncComponent(() => import('../components/AlertModal.vue'))
 
 const router = useRouter()
 const store = usePlayerStore()
+const audioStore = useAudioStore()
 
 const defaultImage = `${BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${DEFAULT_COVER_IMAGE}`
 const uploadedUrl = ref<string | null>(store.coverFile ? URL.createObjectURL(store.coverFile) : null)
 const showError = ref(false)
 
+const fileInput = ref<HTMLInputElement | null>(null)
+const backBtn = ref<HTMLButtonElement | null>(null)
+
+onMounted(() => {
+    // Focus the upload input on mount
+    fileInput.value?.focus()
+
+    // Listen for Escape key
+    window.addEventListener('keydown', handleEscape)
+})
+
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleEscape)
 })
 
-// ⎋ ESC to return to config
+// ⎋ ESC key = back action
 const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape')
-        router.push('/config')
+    if (e.key === 'Escape') handleBack()
 }
 
-// 🎨 Preview update
+// Back button logic with sound
+const handleBack = () => {
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
+    router.push('/config')
+}
+
+// Watch for uploaded file
 watch(
     () => store.coverFile,
-    (file) => {
+    file => {
         uploadedUrl.value = file ? URL.createObjectURL(file) : null
     }
 )
 
+// Handle file upload
 const handleFile = (files: File[]) => {
     const selected = files?.[0]
     if (!selected) return

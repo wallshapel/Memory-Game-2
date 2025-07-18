@@ -6,9 +6,11 @@
 
                 <v-card class="pa-6" width="100%" max-width="400" rounded="xl">
                     <v-text-field ref="nameInput" v-model="name" label="Enter your name" clearable maxlength="18"
-                        counter outlined dense hide-details="auto" @keydown.enter="handleEnter" />
+                        counter outlined dense hide-details="auto" @keydown.enter="handleEnter"
+                        @mouseenter="handleHover(0)" />
 
-                    <v-btn class="mt-4" color="primary" block :disabled="!isNameValid" @click="saveName">
+                    <v-btn ref="saveBtn" class="mt-4" color="primary" block :disabled="!isNameValid" @click="handleSave"
+                        @mouseenter="handleHover(1)">
                         💾 Save
                     </v-btn>
 
@@ -16,7 +18,8 @@
                         ✔️ Name saved
                     </div>
 
-                    <v-btn class="mt-6" color="secondary" @click="router.push('/config')" block max-width="400">
+                    <v-btn ref="backBtn" class="mt-6" color="secondary" @click="handleBack" block max-width="400"
+                        @mouseenter="handleHover(2)">
                         ⬅ Back to Config
                     </v-btn>
                 </v-card>
@@ -26,27 +29,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
+import { useAudioStore } from '../store/audioStore'
+import { GAME_EFFECTS } from '../constants/assets'
 
 const store = usePlayerStore()
+const audioStore = useAudioStore()
 const router = useRouter()
 
 const name = ref(store.name)
 const saved = ref(false)
-const nameInput = ref<HTMLInputElement | null>(null)
 
-// 🕒 Timeout ID for clearing the "saved" flag
+const nameInput = ref<any>(null)
+const saveBtn = ref<any>(null)
+const backBtn = ref<any>(null)
+
+const elements = [nameInput, saveBtn, backBtn]
+let focusedIndex = 0
+
 let saveTimeoutId: number | null = null
 
-const saveName = () => {
+const isNameValid = computed(() => {
+    const trimmed = name.value.trim()
+    return trimmed.length > 0 && trimmed.length <= 18
+})
+
+const handleSave = () => {
     if (!isNameValid.value) return
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR)
     store.setName(name.value.trim())
     saved.value = true
 
-    if (saveTimeoutId)
-        clearTimeout(saveTimeoutId)
+    if (saveTimeoutId) clearTimeout(saveTimeoutId)
 
     saveTimeoutId = setTimeout(() => {
         saved.value = false
@@ -54,33 +70,74 @@ const saveName = () => {
     }, 2000)
 }
 
-// ␛ ESC to go back to config
-const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape')
-        router.push('/config')
+const handleBack = () => {
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
+    router.push('/config')
 }
 
-// ⏎ Pressing Enter is equivalent to saving
 const handleEnter = (event: KeyboardEvent) => {
-    if (isNameValid.value) {
+    if (focusedIndex === 0 && isNameValid.value) {
         event.preventDefault()
-        saveName()
+        handleSave()
     }
 }
 
-// ✅ Name must be 1–18 characters long
-const isNameValid = computed(() => {
-    const trimmed = name.value.trim()
-    return trimmed.length > 0 && trimmed.length <= 18
-})
+const handleKeydown = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+        focusedIndex = (focusedIndex + 1) % elements.length
+        focusElement(focusedIndex)
+        e.preventDefault()
+    } else if (e.key === 'ArrowUp') {
+        focusedIndex = (focusedIndex - 1 + elements.length) % elements.length
+        focusElement(focusedIndex)
+        e.preventDefault()
+    } else if (e.key === 'Enter') {
+        if (focusedIndex === 0 && isNameValid.value)
+            handleSave()
+        else if (focusedIndex === 1)
+            handleSave()
+        else if (focusedIndex === 2)
+            handleBack()
+        e.preventDefault()
+    } else if (e.key === 'Escape') {
+        handleBack()
+    }
+}
+
+const focusElement = (index: number) => {
+    const el = elements[index].value
+    if (!el) return
+
+    focusedIndex = index
+    if (index === 0) {
+        const input = el.$el?.querySelector('input') as HTMLInputElement | null
+        if (input) {
+            input.focus()
+            input.select()
+        }
+    } else {
+        el.$el?.focus?.()
+    }
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
+}
+
+const handleHover = (index: number) => {
+    if (focusedIndex !== index) {
+        focusedIndex = index
+        elements[focusedIndex].value?.$el?.focus?.()
+        audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
+    }
+}
 
 onMounted(() => {
-    nameInput.value?.focus()
-    window.addEventListener('keydown', handleEscape)
+    nextTick(() => {
+        focusElement(0)
+    })
+    window.addEventListener('keydown', handleKeydown)
 })
 
 onBeforeUnmount(() => {
-    window.removeEventListener('keydown', handleEscape)
+    window.removeEventListener('keydown', handleKeydown)
     if (saveTimeoutId) clearTimeout(saveTimeoutId)
 })
 </script>

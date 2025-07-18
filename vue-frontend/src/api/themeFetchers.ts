@@ -8,6 +8,6 @@ type ThemeFetcher = (needed: number) => Promise<ThemeData[]>;
 
 export const themeFetchers: Record<keyof typeof GAME_THEMES, ThemeFetcher> = {
   0: fetchAnimals,
-  1: fetchFlags,
-  2: fetchCharacters
+  1: fetchCharacters,
+  2: fetchFlags
 };

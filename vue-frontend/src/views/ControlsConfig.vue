@@ -6,16 +6,17 @@
 
                 <v-card class="pa-6" width="100%" max-width="500" rounded="xl">
                     <v-radio-group v-model="store.controlMethod" label="Select Control Method" class="mb-4">
-                        <v-radio label="🖱 Mouse (click to flip cards)" value="mouse" />
-                        <v-radio label="⌨️ Keyboard (arrow keys to move, Enter/Space to flip)" value="keyboard" />
+                        <v-radio ref="radioMouse" label="🖱 Mouse (click to flip cards)" value="mouse" />
+                        <v-radio ref="radioKeyboard" label="⌨️ Keyboard (arrow keys to move, Enter/Space to flip)"
+                            value="keyboard" />
                     </v-radio-group>
 
-                    <v-alert type="info" class="mb-4" border="start" variant="tonal"
-                        v-if="store.controlMethod === 'keyboard'">
+                    <v-alert v-if="store.controlMethod === 'keyboard'" type="info" class="mb-4" border="start"
+                        variant="tonal">
                         Use arrow keys (← ↑ → ↓) to move, and Enter or Space to flip the selected card.
                     </v-alert>
 
-                    <v-btn class="mt-6" color="secondary" @click="router.push('/config')" block>
+                    <v-btn ref="backBtn" class="mt-6" color="secondary" @click="handleBack" block>
                         ⬅ Back to Config
                     </v-btn>
                 </v-card>
@@ -25,24 +26,71 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
+import { useAudioStore } from '../store/audioStore'
+import { GAME_EFFECTS } from '../constants/assets'
 
 const router = useRouter()
 const store = usePlayerStore()
+const audioStore = useAudioStore()
 
-// ⎋ ESC to return to config
-const handleEscape = (e: KeyboardEvent) => {
-    if (e.key === 'Escape')
-        router.push('/config')
+const radioMouse = ref()
+const radioKeyboard = ref()
+const backBtn = ref()
+
+const focusables = [radioMouse, radioKeyboard, backBtn]
+let focusIndex = 0
+
+const focusCurrent = () => {
+    const el = focusables[focusIndex].value?.$el?.querySelector('input, button') || focusables[focusIndex].value?.$el
+    el?.focus()
+}
+
+const updateSelection = () => {
+    if (focusables[focusIndex] === radioMouse) store.controlMethod = 'mouse'
+    if (focusables[focusIndex] === radioKeyboard) store.controlMethod = 'keyboard'
+}
+
+const playOverSound = () => {
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
+}
+
+const handleKeyNavigation = (e: KeyboardEvent) => {
+    if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        focusIndex = (focusIndex - 1 + focusables.length) % focusables.length
+        updateSelection()
+        focusCurrent()
+        playOverSound()
+    } else if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        focusIndex = (focusIndex + 1) % focusables.length
+        updateSelection()
+        focusCurrent()
+        playOverSound()
+    } else if (e.key === 'Escape') {
+        e.preventDefault()
+        handleBack()
+    }
+}
+
+const handleBack = () => {
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
+    router.push('/config')
 }
 
 onMounted(() => {
-    window.addEventListener('keydown', handleEscape)
+    window.addEventListener('keydown', handleKeyNavigation)
+    nextTick(() => {
+        // Sets initial focus according to selected option
+        focusIndex = store.controlMethod === 'keyboard' ? 1 : 0
+        focusCurrent()
+    })
 })
 
 onBeforeUnmount(() => {
-    window.removeEventListener('keydown', handleEscape)
+    window.removeEventListener('keydown', handleKeyNavigation)
 })
 </script>
