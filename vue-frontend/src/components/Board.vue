@@ -18,29 +18,29 @@ import { useGameStore } from '../store/gameStore'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
 import Card from './Card.vue'
-import { GAME_EFFECTS } from '../constants/assets'
+import { BOARD_GAP, BREAKPOINTS, DEFAULT_CARDS_SIZE, GAME_EFFECTS } from '../constants/assets'
 
 const game = useGameStore()
 const store = usePlayerStore()
 const audio = useAudioStore()
 
-const cardWidth = ref(50)
-const cardHeight = ref(75)
+const cardWidth = ref(DEFAULT_CARDS_SIZE.width)
+const cardHeight = ref(DEFAULT_CARDS_SIZE.height)
 
 function updateCardSize() {
     const width = window.innerWidth
-    if (width <= 539) {
-        cardWidth.value = 50
-        cardHeight.value = 75
-    } else if (width <= 640) {
-        cardWidth.value = 70
-        cardHeight.value = 105
-    } else if (width <= 739) {
-        cardWidth.value = 80
-        cardHeight.value = 120
+    if (width <= BREAKPOINTS.xs.maxWidth) {
+        cardWidth.value = BREAKPOINTS.xs.cardWidth
+        cardHeight.value = BREAKPOINTS.xs.cardHeight
+    } else if (width <= BREAKPOINTS.sm.maxWidth) {
+        cardWidth.value = BREAKPOINTS.sm.cardWidth
+        cardHeight.value = BREAKPOINTS.sm.cardHeight
+    } else if (width <= BREAKPOINTS.md.maxWidth) {
+        cardWidth.value = BREAKPOINTS.md.cardWidth
+        cardHeight.value = BREAKPOINTS.md.cardHeight
     } else {
-        cardWidth.value = 90
-        cardHeight.value = 135
+        cardWidth.value = BREAKPOINTS.lg.cardWidth
+        cardHeight.value = BREAKPOINTS.lg.cardHeight
     }
 }
 
@@ -74,7 +74,7 @@ const gridStyle = computed(() => {
     return {
         display: 'grid',
         gridTemplateColumns: `repeat(${grid.columns}, ${cardWidth.value}px)`,
-        gap: '8px',
+        gap: BOARD_GAP,
     }
 })
 

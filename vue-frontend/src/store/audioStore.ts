@@ -5,8 +5,8 @@ import {
   OTHER_MUSICAL_BACKGROUNDS,
   GAME_EFFECTS,
   GAME_SCORE_MUSIC,
-  DEFAULT_BACKGROUND,
 } from "../constants/assets";
+import { usePlayerStore } from "./playerStore";
 
 export type BackgroundMusicIndex = keyof typeof BACKGROUND_MUSIC;
 type GameEffect = (typeof GAME_EFFECTS)[keyof typeof GAME_EFFECTS];
@@ -15,7 +15,7 @@ type GameScoreMusic = (typeof GAME_SCORE_MUSIC)[keyof typeof GAME_SCORE_MUSIC];
 export const useAudioStore = defineStore("audio", {
   state: () => ({
     // 🎵 Background music
-    musicTrack: DEFAULT_BACKGROUND as BackgroundMusicIndex,
+    musicTrack: usePlayerStore().backgroundMusic as BackgroundMusicIndex,
     musicMuted: false,
     musicVolume: 50,
     bgMusicInstance: null as HTMLAudioElement | null,
@@ -51,8 +51,7 @@ export const useAudioStore = defineStore("audio", {
 
     setMusicVolume(volume: number) {
       this.musicVolume = volume;
-      if (this.bgMusicInstance) 
-        this.bgMusicInstance.volume = volume / 100;
+      if (this.bgMusicInstance) this.bgMusicInstance.volume = volume / 100;
     },
 
     setEffectsMuted(muted: boolean) {
@@ -156,8 +155,7 @@ export const useAudioStore = defineStore("audio", {
         if (!this.bgMusicInstance.paused) {
           this.bgMusicInstance.pause();
           this._wasBackgroundPlaying = true;
-        } else 
-          this._wasBackgroundPlaying = false;
+        } else this._wasBackgroundPlaying = false;
       }
 
       this.gameMusicInstance?.pause();

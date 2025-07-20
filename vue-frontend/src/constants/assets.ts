@@ -16,6 +16,23 @@ export const CARD_DISPLAY_SETTINGS = {
   CARD_PRESENTATION_DELAY_MS: 1000, // delay before revealing cards face-up at game start
 };
 
+// 📱 Breakpoints for responsive card sizes
+export const BREAKPOINTS = {
+  xs: { maxWidth: 539, cardWidth: 50, cardHeight: 75 },
+  sm: { maxWidth: 640, cardWidth: 70, cardHeight: 105 },
+  md: { maxWidth: 739, cardWidth: 80, cardHeight: 120 },
+  lg: { maxWidth: Infinity, cardWidth: 90, cardHeight: 135 },
+};
+
+// 🃏 Default Cards size
+export const DEFAULT_CARDS_SIZE = {
+  width: 50,
+  height: 75,
+};
+
+// 🟫 Board gap
+export const BOARD_GAP = "8px" as const;
+
 // ⏳ Delay for memorization phase (cards face-up) by difficulty
 export const DELAY_MEMORIZATION_PHASE = {
   MEMORIZATION_DELAY_EASY: 14000,
@@ -40,11 +57,11 @@ export const DIFFICULTY_LEVELS = {
   2: "HARD",
 } as const;
 
-export type GameThemeLiteral = keyof typeof GAME_THEMES // 0 | 1 | 2
-export type DifficultyLiteral = keyof typeof DIFFICULTY_LEVELS // 0 | 1 | 2
+export type GameThemeLiteral = keyof typeof GAME_THEMES; // 0 | 1 | 2
+export type DifficultyLiteral = keyof typeof DIFFICULTY_LEVELS; // 0 | 1 | 2
 
 /******************************************************************************************************************************************************************
- *                                                             A U D I O
+ *                                                            A U D I O
  * ***************************************************************************************************************************************************************/
 
 // 🛣️ Base paths for audio resources
@@ -91,9 +108,6 @@ export const OTHER_MUSICAL_BACKGROUNDS = {
   gameplay: "feuxfollets",
   settings: "liebestraum",
 } as const;
-
-// 🎵 Default background
-export const DEFAULT_BACKGROUND = 0;
 
 // 🎵 Music for game results
 export const GAME_SCORE_MUSIC = {

@@ -1,5 +1,9 @@
 import { defineStore } from "pinia";
-import { DEFAULT_COVER_IMAGE, DIFFICULTY_LEVELS, GAME_THEMES } from "../constants/assets";
+import {
+  DEFAULT_COVER_IMAGE,
+  DIFFICULTY_LEVELS,
+  GAME_THEMES,
+} from "../constants/assets";
 
 export const usePlayerStore = defineStore("player", {
   state: () => ({
@@ -17,13 +21,12 @@ export const usePlayerStore = defineStore("player", {
 
     // 🎮 Control method
     controlMethod: "mouse" as "mouse" | "keyboard",
+
+    // 🎵 Default background
+    backgroundMusic: 1,
   }),
 
   actions: {
-    // 🖼️ Card cover
-    getDefaultCoverImage(): string {
-      return DEFAULT_COVER_IMAGE
-    },
     // 🧑 Profile
     setName(name: string) {
       this.name = name;
@@ -44,6 +47,10 @@ export const usePlayerStore = defineStore("player", {
     setCoverType(type: "default" | "uploaded") {
       this.coverType = type;
     },
+    // 🖼️ Card cover
+    getDefaultCoverImage(): string {
+      return DEFAULT_COVER_IMAGE;
+    },
     // 📄 Cover File
     setCoverFile(file: File | null) {
       this.coverFile = file;
@@ -51,6 +58,10 @@ export const usePlayerStore = defineStore("player", {
     // 🖱️⌨️ Control Method
     setControlMethod(method: "mouse" | "keyboard") {
       this.controlMethod = method;
+    },
+    // 🎵 Set default background
+    setBackgroundMusic(bg: number) {
+      this.backgroundMusic = bg;
     },
   },
 });
