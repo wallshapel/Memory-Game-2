@@ -56,18 +56,21 @@ const isNameValid = computed(() => {
     return trimmed.length > 0 && trimmed.length <= 18
 })
 
-const handleSave = () => {
-    if (!isNameValid.value) return
-    audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR)
-    store.setName(name.value.trim())
-    saved.value = true
+const handleSave = async () => {
+    if (!isNameValid.value) return;
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
+    store.setName(name.value.trim());
 
-    if (saveTimeoutId) clearTimeout(saveTimeoutId)
+    await store.saveToBackend(); // <-- Call to backend
+
+    saved.value = true;
+
+    if (saveTimeoutId) clearTimeout(saveTimeoutId);
 
     saveTimeoutId = setTimeout(() => {
-        saved.value = false
-        saveTimeoutId = null
-    }, 2000)
+        saved.value = false;
+        saveTimeoutId = null;
+    }, 2000);
 }
 
 const handleBack = () => {

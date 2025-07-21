@@ -1,10 +1,10 @@
 import axios from "axios";
-import type { ThemeData } from "../../types/ThemeData";
+import type { IThemeData } from "../../interfaces/IThemeData";
 import { shuffleArray } from "../../utils/shuffleArray";
 
 const API_URL = "https://rickandmortyapi.com/api/character";
 
-export async function fetchCharacters(needed: number): Promise<ThemeData[]> {
+export async function fetchCharacters(needed: number): Promise<IThemeData[]> {
   const PAGE_SIZE = 20;
   const TOTAL_CHARACTERS = 826;
   const TOTAL_PAGES = 42;
@@ -25,7 +25,7 @@ export async function fetchCharacters(needed: number): Promise<ThemeData[]> {
     )
   );
 
-  const allCharacters: ThemeData[] = responses.flatMap((res) =>
+  const allCharacters: IThemeData[] = responses.flatMap((res) =>
     res.data.results.map((char: any) => ({
       id: String(char.id),
       name: char.name,

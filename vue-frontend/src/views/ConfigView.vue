@@ -90,7 +90,7 @@ const handleClick = (routePath: string) => {
     router.push(routePath)
 }
 
-// 🎵 Música de fondo para configuración
+// 🎵 Background music for configuration
 const checkAndPlayMusic = () => {
     const expectedFile = OTHER_MUSICAL_BACKGROUNDS.settings
     const currentSrc = audioStore.bgMusicInstance?.src || ''

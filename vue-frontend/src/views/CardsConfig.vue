@@ -45,7 +45,8 @@
                 </v-card>
 
                 <!-- Error Modal -->
-                <AlertModal v-model="showError" title="Invalid File" message="Only .png files under 5MB are allowed."
+                <AlertModal v-model="showError" :title="store.name ? 'Invalid File' : 'User Required'"
+                    :message="store.name ? 'Only .png files under 5MB are allowed.' : 'Please set your user name before uploading a cover.'"
                     actionLabel="OK" @confirm="showError = false" />
             </v-container>
         </v-main>
@@ -53,11 +54,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, defineAsyncComponent, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
 import { BASE_PATH_IMAGE_RESOURCES, DEFAULT_COVER_IMAGE, GAME_EFFECTS } from '../constants/assets'
+import { uploadCover } from '../api/backend/cover'
 
 const AlertModal = defineAsyncComponent(() => import('../components/AlertModal.vue'))
 
@@ -66,7 +68,6 @@ const store = usePlayerStore()
 const audioStore = useAudioStore()
 
 const defaultImage = `${BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${DEFAULT_COVER_IMAGE}`
-const uploadedUrl = ref<string | null>(store.coverFile ? URL.createObjectURL(store.coverFile) : null)
 const showError = ref(false)
 
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -95,28 +96,44 @@ const handleBack = () => {
     router.push('/config')
 }
 
-// Watch for uploaded file
-watch(
-    () => store.coverFile,
-    file => {
-        uploadedUrl.value = file ? URL.createObjectURL(file) : null
-    }
-)
+const uploadedUrl = computed(() => {
+    // If there is a newly uploaded local file, show local preview
+    if (store.coverFile)
+        return URL.createObjectURL(store.coverFile);
+    // If it is already saved in the backend and selected the option
+    if (store.coverType === "uploaded" && store.coverFileName)
+        return `${import.meta.env.VITE_API_BASE}/uploads/images/covers/${store.coverFileName}`;
+    return null;
+});
 
 // Handle file upload
-const handleFile = (files: File[]) => {
-    const selected = files?.[0]
-    if (!selected) return
+const handleFile = async (files: File[]) => {
+    const selected = files?.[0];
+    if (!selected) return;
 
-    const isPNG = selected.type === 'image/png'
-    const isValidSize = selected.size <= 5 * 1024 * 1024
-
-    if (!isPNG || !isValidSize) {
-        showError.value = true
-        return
+    if (!store.name || store.name.trim().length === 0) {
+        showError.value = true;
+        return;
     }
 
-    store.setCoverFile(selected)
-    store.setCoverType('uploaded')
+    const isPNG = selected.type === 'image/png';
+    const isValidSize = selected.size <= 5 * 1024 * 1024;
+
+    if (!isPNG || !isValidSize) {
+        showError.value = true;
+        return;
+    }
+
+    // Upload the file to backend and get the filename, passing username
+    try {
+        const { filename } = await uploadCover(selected, store.name || "");
+        store.setCoverFile(selected);
+        store.setCoverFileName(filename);
+        store.setCoverType('uploaded');
+        if (store.name && store.name.trim().length > 0)
+            await store.saveToBackend();
+    } catch (e) {
+        showError.value = true;
+    }
 }
 </script>

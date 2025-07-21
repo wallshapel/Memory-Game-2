@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent, onMounted, nextTick, onBeforeUnmount } from 'vue'
+import { ref, defineAsyncComponent, onMounted, nextTick, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
@@ -87,21 +87,28 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  audioStore.stopAllAudio()
+  audioStore.stopAllAudio();
+
+  // Wait for playerStore.isLoaded to be true to play the correct music.
+  watch(
+    () => playerStore.isLoaded,
+    (loaded) => {
+      if (loaded) {
+        const file = audioStore.getMusicFileFromKey(audioStore.musicTrack)
+        const audio = audioStore.playAudio(file, "music", {
+          loop: true,
+          volume: audioStore.musicVolume / 100,
+        })
+        audioStore.bgMusicInstance = audio
+      }
+    },
+    { immediate: true }
+  )
 
   nextTick(() => {
     focusedIndex = 0
     playButton.value?.$el?.focus()
   })
-
-  const file = audioStore.getMusicFileFromKey(audioStore.musicTrack)
-
-  const audio = audioStore.playAudio(file, "music", {
-    loop: true,
-    volume: audioStore.musicVolume / 100,
-  })
-
-  audioStore.bgMusicInstance = audio
 
   window.addEventListener('keydown', handleKeydown)
 })

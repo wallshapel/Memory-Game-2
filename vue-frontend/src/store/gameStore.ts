@@ -2,8 +2,8 @@ import { defineStore } from "pinia";
 import { ref, watch, computed } from "vue";
 import { usePlayerStore } from "./playerStore";
 import { useAudioStore } from "./audioStore";
-import type { CardData } from "../types/CardData";
-import type { ThemeData } from "../types/ThemeData";
+import type { ICardData } from "../interfaces/ICardData";
+import type { IThemeData } from "../interfaces/IThemeData";
 import {
   CARD_DISPLAY_SETTINGS,
   DELAY_MEMORIZATION_PHASE,
@@ -13,15 +13,16 @@ import {
 } from "../constants/assets";
 import { shuffleArray } from "../utils/shuffleArray";
 import { themeFetchers } from "../api/themeFetchers";
+import { saveRecord } from "../api/backend/records";
 
 export const useGameStore = defineStore("game", () => {
   const playerStore = usePlayerStore();
   const audioStore = useAudioStore();
   const showSettingsModal = ref(false);
 
-  const cards = ref<CardData[]>([]);
-  const firstCard = ref<CardData | null>(null);
-  const secondCard = ref<CardData | null>(null);
+  const cards = ref<ICardData[]>([]);
+  const firstCard = ref<ICardData | null>(null);
+  const secondCard = ref<ICardData | null>(null);
   const focusedIndex = ref(0);
   const cardsAreReady = ref(false);
 
@@ -70,7 +71,7 @@ export const useGameStore = defineStore("game", () => {
     memorizationTimeout = null;
     chronometerStartTimeout = null;
 
-    let rawData: ThemeData[] = [];
+    let rawData: IThemeData[] = [];
 
     try {
       const theme = playerStore.theme;
@@ -86,7 +87,7 @@ export const useGameStore = defineStore("game", () => {
       return;
     }
 
-    const duplicated: CardData[] = rawData.flatMap((entry) => {
+    const duplicated: ICardData[] = rawData.flatMap((entry) => {
       if (!entry.name || !entry.imageUrl) return [];
 
       return [0, 1].map((suffix) => ({
@@ -144,7 +145,7 @@ export const useGameStore = defineStore("game", () => {
     initializeGame();
   }
 
-  function handleCardClick(card: CardData) {
+  function handleCardClick(card: ICardData) {
     if (hasWon.value || hasLost.value) return;
     if (card.flipped || card.blocked || secondCard.value) return;
 
@@ -182,13 +183,14 @@ export const useGameStore = defineStore("game", () => {
     }
   }
 
-  function checkWin() {
+  async function checkWin() {
     if (hasWon.value) return;
 
     const matchedAll = cards.value.every((card) => card.matched);
     if (matchedAll) {
       hasWon.value = true;
       stopChronometer();
+      await saveGameRecord();
       audioStore.stopAllAudio();
       audioStore.playEffect(GAME_SCORE_MUSIC.MUSIC_VICTORY);
       setTimeout(() => {
@@ -198,10 +200,11 @@ export const useGameStore = defineStore("game", () => {
   }
 
   // 🧠 Watch failCount and trigger Game Over after delay
-  watch(failCount, (newVal) => {
+  watch(failCount, async (newVal) => {
     if (newVal >= maxFails.value && !hasLost.value && !hasWon.value) {
       hasLost.value = true;
       stopChronometer();
+      await saveGameRecord();
       audioStore.stopAllAudio();
       audioStore.playEffect(GAME_SCORE_MUSIC.MUSIC_GAME_OVER);
 
@@ -280,6 +283,19 @@ export const useGameStore = defineStore("game", () => {
   function resetChronometer() {
     stopChronometer();
     milliseconds.value = 0;
+  }
+
+  async function saveGameRecord() {
+    const player = usePlayerStore();
+    if (!player.name || player.name.trim().length === 0) return;
+    await saveRecord({
+      name: player.name,
+      difficulty: player.difficulty,
+      totalCards: player.totalCards,
+      hits: successCount.value,
+      mistakes: failCount.value,
+      time: Math.floor(milliseconds.value / 1000),
+    });
   }
 
   return {

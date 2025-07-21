@@ -42,6 +42,26 @@ const UserSettingsSchema = new Schema<IUserSettings>(
       type: Number,
       required: true,
     },
+    musicVolume: {
+      type: Number,
+      default: 100,
+      required: true,
+    },
+    musicMuted: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    effectsVolume: {
+      type: Number,
+      default: 100,
+      required: true,
+    },
+    effectsMuted: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },

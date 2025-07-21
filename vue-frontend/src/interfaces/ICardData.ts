@@ -1,4 +1,4 @@
-export interface CardData {
+export interface ICardData {
   id: string
   name: string
   image: string

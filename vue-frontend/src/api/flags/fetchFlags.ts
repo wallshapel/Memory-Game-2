@@ -1,8 +1,8 @@
-import type { ThemeData } from "../../types/ThemeData";
+import type { IThemeData } from "../../interfaces/IThemeData";
 import { shuffleArray } from "../../utils/shuffleArray";
 import { COUNTRY_CODES } from "../../utils/countryCodes";
 
-export async function fetchFlags(needed: number): Promise<ThemeData[]> {
+export async function fetchFlags(needed: number): Promise<IThemeData[]> {
   if (needed > COUNTRY_CODES.length) {
     throw new Error(`Cannot fetch more than ${COUNTRY_CODES.length} distinct flags`);
   }

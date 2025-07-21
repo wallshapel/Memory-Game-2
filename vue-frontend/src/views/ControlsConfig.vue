@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, nextTick } from 'vue'
+import { onMounted, onBeforeUnmount, ref, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
@@ -93,4 +93,13 @@ onMounted(() => {
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleKeyNavigation)
 })
+
+// Watcher to save controlMethod change to backend if user exists
+watch(
+    () => store.controlMethod,
+    async () => {
+        if (store.name && store.name.trim().length > 0)
+            await store.saveToBackend();
+    }
+)
 </script>

@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { ThemeData } from "../../types/ThemeData";
+import type { IThemeData } from "../../interfaces/IThemeData";
 import { shuffleArray } from "../../utils/shuffleArray";
 
 const API_URL =
@@ -7,7 +7,7 @@ const API_URL =
 const TOTAL_CARDS_AVAILABLE = 20;
 const PAGE_SIZE = 5;
 
-export async function fetchAnimals(needed: number): Promise<ThemeData[]> {
+export async function fetchAnimals(needed: number): Promise<IThemeData[]> {
   if (needed > TOTAL_CARDS_AVAILABLE)
     throw new Error(
       `Cannot fetch more than ${TOTAL_CARDS_AVAILABLE} distinct cards`
@@ -31,7 +31,7 @@ export async function fetchAnimals(needed: number): Promise<ThemeData[]> {
     )
   );
 
-  const allCards: ThemeData[] = responses.flatMap((res) =>
+  const allCards: IThemeData[] = responses.flatMap((res) =>
     res.data.entries.map((entry: any) => ({
       name: entry.meta?.name ?? `Unnamed-${Math.random()}`,
       imageUrl: entry.fields?.image?.url ?? "",

@@ -42,10 +42,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAudioStore } from '../store/audioStore'
+import { usePlayerStore } from '../store/playerStore'
 import {
   BASE_PATH_AUDIO_RESOURCES,
   EFFECTS_VOLUME,
@@ -56,6 +57,7 @@ import type { BackgroundMusicIndex } from '../store/audioStore'
 
 const router = useRouter()
 const store = useAudioStore()
+const playerStore = usePlayerStore()
 
 // Refs to focus
 const musicSelect = ref<any>(null)
@@ -100,7 +102,10 @@ const musicMuted = computed({
 
 const musicTrack = computed({
   get: () => store.musicTrack,
-  set: (val: BackgroundMusicIndex) => store.setMusicTrack(val)
+  set: (val: BackgroundMusicIndex) => {
+    store.setMusicTrack(val);
+    playerStore.setBackgroundMusic(val);
+  }
 })
 
 const musicTracks = computed<Array<{ value: BackgroundMusicIndex; title: string }>>(() =>
@@ -222,4 +227,19 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeyDown, true)
   document.removeEventListener('focusin', handleFocusIn)
 })
+
+watch(
+  [
+    () => store.musicTrack,
+    () => store.musicMuted,
+    () => store.musicVolume,
+    () => store.effectsMuted,
+    () => store.effectsVolume
+  ],
+  async () => {
+    if (playerStore.name && playerStore.name.trim().length > 0)
+      await playerStore.saveToBackend();
+  }
+)
+
 </script>

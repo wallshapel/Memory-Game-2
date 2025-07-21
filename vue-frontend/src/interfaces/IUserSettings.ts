@@ -1,15 +1,15 @@
-export interface IUserSettings extends Document {
+export interface IUserSettings {
   name: string;
   difficulty: number;
   theme: number;
   totalCards: number;
   coverType: "default" | "uploaded";
-  coverFileName?: string; // optional unless coverType is 'uploaded'
+  coverFileName?: string;
   controlMethod: "mouse" | "keyboard";
   background: number;
-  musicVolume: number; 
+  musicVolume: number;
   musicMuted: boolean;
   effectsVolume: number;
   effectsMuted: boolean;
-  createdAt: Date;
+  createdAt?: string;
 }

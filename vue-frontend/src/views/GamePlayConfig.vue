@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import type { Ref, ComponentPublicInstance } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
@@ -189,4 +189,12 @@ const handleDifficultyKey = (e: KeyboardEvent) => {
         audioStore.playEffect(GAME_EFFECTS.EFFECT_SELECT)
     }
 }
+
+watch(
+    [() => store.difficulty, () => store.totalCards, () => store.theme],
+    async () => {
+        if (store.name && store.name.trim().length > 0) 
+            await store.saveToBackend();
+    }
+)
 </script>

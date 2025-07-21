@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
-import { trySaveRecord } from "../services/impl/gameRecordService";
+import { GameRecordService } from "../services/gameRecordService";
+import { GameRecordServiceImpl } from "../services/impl/gameRecordServiceImp";
 import GameRecord from "../models/GameRecord";
+
+const gameRecordService: GameRecordService = new GameRecordServiceImpl();
 
 /**
  * POST /api/records
@@ -8,7 +11,7 @@ import GameRecord from "../models/GameRecord";
  */
 export const saveRecord = async (req: Request, res: Response) => {
   try {
-    const ok = await trySaveRecord(req.body);
+    const ok = await gameRecordService.trySaveRecord(req.body);
     if (ok) return res.status(201).json({ saved: true });
     return res.status(200).json({ saved: false, reason: "Not in top 20" });
   } catch (err: any) {
