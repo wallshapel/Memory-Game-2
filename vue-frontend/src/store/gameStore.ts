@@ -204,10 +204,8 @@ export const useGameStore = defineStore("game", () => {
     if (newVal >= maxFails.value && !hasLost.value && !hasWon.value) {
       hasLost.value = true;
       stopChronometer();
-      await saveGameRecord();
       audioStore.stopAllAudio();
       audioStore.playEffect(GAME_SCORE_MUSIC.MUSIC_GAME_OVER);
-
       resultModalTimeout = setTimeout(() => {
         showResultModal.value = true;
         resultModalTimeout = null;
@@ -294,7 +292,7 @@ export const useGameStore = defineStore("game", () => {
       totalCards: player.totalCards,
       hits: successCount.value,
       mistakes: failCount.value,
-      time: Math.floor(milliseconds.value / 1000),
+      time: milliseconds.value,
     });
   }
 

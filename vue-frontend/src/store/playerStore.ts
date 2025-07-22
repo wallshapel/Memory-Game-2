@@ -78,7 +78,7 @@ export const usePlayerStore = defineStore("player", {
     async loadInitialSettings() {
       try {
         const settings = await getLatestUserSettings();
-        if (!settings) return;
+        if (!settings) throw new Error("No settings found");
         this.name = settings.name;
         this.difficulty = settings.difficulty as keyof typeof DIFFICULTY_LEVELS;
         this.theme = settings.theme as keyof typeof GAME_THEMES;
@@ -95,10 +95,29 @@ export const usePlayerStore = defineStore("player", {
         audio.effectsMuted = settings.effectsMuted ?? false;
         this.isLoaded = true;
       } catch (e) {
-        console.warn("Initial settings could not be loaded", e);
+        this.name = "";
+        this.difficulty = 0 as keyof typeof DIFFICULTY_LEVELS;
+        this.theme = 0 as keyof typeof GAME_THEMES;
+        this.totalCards = 10;
+        this.coverType = "default";
+        this.coverFile = null;
+        this.coverFileName = undefined;
+        this.controlMethod = "mouse";
+        this.backgroundMusic = 0;
+        const audio = useAudioStore();
+        audio.musicTrack = 0;
+        audio.musicVolume = 50;
+        audio.musicMuted = false;
+        audio.effectsVolume = 70;
+        audio.effectsMuted = false;
+        this.isLoaded = true;
+        console.warn(
+          "Initial settings could not be loaded, defaults restored.",
+          e
+        );
       }
     },
-
+    
     async saveToBackend() {
       if (!this.name || this.name.trim().length === 0)
         throw new Error("User name is required");
