@@ -78,10 +78,7 @@ export const usePlayerStore = defineStore("player", {
         this.isLoaded = true;
       } catch (e) {
         await this.resetToDefaults();
-        console.warn(
-          "Initial settings could not be loaded, defaults restored.",
-          e
-        );
+        this.isLoaded = true;
       }
     },
 
