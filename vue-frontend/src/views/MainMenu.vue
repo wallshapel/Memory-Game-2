@@ -14,6 +14,10 @@
             ⚙️ Settings
           </v-btn>
 
+          <v-btn ref="recordsButton" block color="info" @click="handleRecords" @mouseenter="handleHover(2)">
+            🏆 Records
+          </v-btn>
+
           <!-- Modal profile -->
           <AlertModal v-model="showModal" title="Missing Profile"
             message="Please enter your name in the Profile section before playing." actionLabel="Go to Profile"
@@ -41,8 +45,16 @@ const showModal = ref(false)
 const playButton = ref<any>(null)
 const settingsButton = ref<any>(null)
 
-const buttons = [playButton, settingsButton]
+const recordsButton = ref<any>(null)
+
+const buttons = [playButton, settingsButton, recordsButton]
+
 let focusedIndex = 0
+
+const handleRecords = () => {
+  audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
+  router.push('/records')
+}
 
 const handlePlay = () => {
   audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)

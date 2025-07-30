@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import WelcomeView from "../views/ WelcomeView.vue";
+import WelcomeView from "../views/WelcomeView.vue";
 import MainMenu from "../views/MainMenu.vue";
 import ConfigView from "../views/ConfigView.vue";
 import ProfileConfig from "../views/ProfileConfig.vue";
@@ -8,6 +8,7 @@ import CardsConfig from "../views/CardsConfig.vue";
 import ControlsConfig from "../views/ControlsConfig.vue";
 import SoundConfig from "../views/SoundConfig.vue";
 import GameView from "../views/GameView.vue";
+import RecordsView from "../views/RecordsView.vue";
 import { useAudioStore } from "../store/audioStore";
 
 const routes = [
@@ -20,6 +21,7 @@ const routes = [
   { path: "/config/controls", component: ControlsConfig },
   { path: "/config/sound", component: SoundConfig },
   { path: "/game", component: GameView },
+  { path: "/records", component: RecordsView },
 ];
 
 export const router = createRouter({
