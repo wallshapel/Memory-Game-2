@@ -20,8 +20,7 @@ export const saveSettings = async (req: Request, res: Response) => {
 export const fetchLatestSettings = async (req: Request, res: Response) => {
   try {
     const settings = await userSettingsService.getLatestUserSettings();
-    if (!settings) return res.status(404).json({ error: "No user found" });
-    return res.json(settings);
+    return res.status(200).json(settings || null);
   } catch (err: any) {
     return res.status(400).json({ error: err.message });
   }
