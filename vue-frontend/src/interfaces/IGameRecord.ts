@@ -8,3 +8,12 @@ export interface IGameRecord {
   time: number;
   createdAt?: string;
 }
+
+export interface ISaveRecord {
+  name: string;
+  difficulty: number;
+  totalCards: number;
+  hits: number;
+  mistakes: number;
+  time: number;
+}

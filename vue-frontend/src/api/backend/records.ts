@@ -1,5 +1,5 @@
 import api from "./apiConfig";
-import type { IGameRecord } from "../../interfaces/IGameRecord";
+import type { IGameRecord, ISaveRecord } from "../../interfaces/IGameRecord";
 
 export const getTopRecords = async () => {
   const { data } = await api.get<IGameRecord[]>("/records");
@@ -13,14 +13,7 @@ export const trySaveRecord = async (
   return data;
 };
 
-export const saveRecord = async (record: {
-  name: string;
-  difficulty: number;
-  totalCards: number;
-  hits: number;
-  mistakes: number;
-  time: number;
-}) => {
+export const saveRecord = async (record: ISaveRecord) => {
   const { data } = await api.post("/records", record);
   return data;
 };

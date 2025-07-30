@@ -1,16 +1,10 @@
+import { ISaveRecord } from "../../interfaces/IGameRecord";
 import GameRecord from "../../models/GameRecord";
 import type { GameRecordComparable } from "../../types/GameRecordComparabke";
 import { GameRecordService } from "../gameRecordService";
 
 export class GameRecordServiceImpl implements GameRecordService {
-  async trySaveRecord(recordData: {
-    name: string;
-    difficulty: number;
-    totalCards: number;
-    hits: number;
-    mistakes: number;
-    time: number;
-  }): Promise<boolean> {
+  async trySaveRecord(recordData: ISaveRecord): Promise<boolean> {
     // Calculate effectiveness
     const attempts = recordData.hits + recordData.mistakes;
     const effectiveness =
@@ -37,9 +31,9 @@ export class GameRecordServiceImpl implements GameRecordService {
 
     // Check if the new record should be in the top 20
     let qualifies = false;
-    if (topRecords.length < 20) {
+    if (topRecords.length < 20)
       qualifies = true;
-    } else {
+    else {
       const last = topRecords[topRecords.length - 1];
       const cmp = compareRecords(
         {

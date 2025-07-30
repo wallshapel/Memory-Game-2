@@ -1,24 +1,11 @@
 import UserSettings from "../../models/UserSettings";
-import { IUserSettings } from "../../interfaces/IUserSettings";
+import { ISaveUpdateUserSettings, IUserSettings, IUserSettingsUpdate } from "../../interfaces/IUserSettings";
 import { UserSettingsService } from "../userSettingsService";
 
 export class UserSettingsServiceImpl implements UserSettingsService {
-  async saveOrUpdateUserSettings(data: {
-    name: string;
-    difficulty: number;
-    theme: number;
-    totalCards: number;
-    coverType: "default" | "uploaded";
-    coverFileName?: string;
-    controlMethod: "mouse" | "keyboard";
-    background: number;
-    musicVolume: number;
-    musicMuted: boolean;
-    effectsVolume: number;
-    effectsMuted: boolean;
-  }): Promise<IUserSettings> {
+  async saveOrUpdateUserSettings(data: ISaveUpdateUserSettings): Promise<IUserSettings> {
     // Upsert (update if exists, otherwise insert)
-    const update: any = {
+    const update: IUserSettingsUpdate = {
       difficulty: data.difficulty,
       theme: data.theme,
       totalCards: data.totalCards,
