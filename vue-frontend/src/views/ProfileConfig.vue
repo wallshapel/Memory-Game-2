@@ -14,8 +14,8 @@
                         💾 Save
                     </v-btn>
 
-                    <div v-if="saved" class="text-success mt-4 text-center">
-                        ✔️ Name saved
+                    <div v-if="statusMessage" class="text-success mt-4 text-center">
+                        {{ statusMessage }}
                     </div>
 
                     <v-btn ref="backBtn" class="mt-6" color="secondary" @click="handleBack" block max-width="400"
@@ -34,13 +34,14 @@ import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
 import { GAME_EFFECTS } from '../constants/assets'
+import { checkUserExists } from '../api/backend/userSettings'
 
 const store = usePlayerStore()
 const audioStore = useAudioStore()
 const router = useRouter()
 
 const name = ref(store.name)
-const saved = ref(false)
+const statusMessage = ref<string | null>(null)
 
 const nameInput = ref<any>(null)
 const saveBtn = ref<any>(null)
@@ -48,8 +49,7 @@ const backBtn = ref<any>(null)
 
 const elements = [nameInput, saveBtn, backBtn]
 let focusedIndex = 0
-
-let saveTimeoutId: number | null = null
+let statusTimeoutId: number | null = null
 
 const isNameValid = computed(() => {
     const trimmed = name.value.trim()
@@ -57,21 +57,29 @@ const isNameValid = computed(() => {
 })
 
 const handleSave = async () => {
-    if (!isNameValid.value) return;
-    audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
-    store.setName(name.value.trim());
+  if (!isNameValid.value) return;
 
-    await store.saveToBackend(); // <-- Call to backend
+  const trimmedName = name.value.trim();
+  audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
 
-    saved.value = true;
+  const exists = await checkUserExists(trimmedName);
 
-    if (saveTimeoutId) clearTimeout(saveTimeoutId);
+  if (exists) {
+    await store.loadUserSettingsByName(trimmedName);
+    statusMessage.value = "✔ User loaded";
+  } else {
+    await store.resetToDefaults();
+    store.setName(trimmedName);
+    await store.saveToBackend();
+    statusMessage.value = "✔ New user created";
+  }
 
-    saveTimeoutId = setTimeout(() => {
-        saved.value = false;
-        saveTimeoutId = null;
-    }, 2000);
-}
+  if (statusTimeoutId) clearTimeout(statusTimeoutId);
+  statusTimeoutId = setTimeout(() => {
+    statusMessage.value = null;
+    statusTimeoutId = null;
+  }, 2000);
+};
 
 const handleBack = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
@@ -141,6 +149,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleKeydown)
-    if (saveTimeoutId) clearTimeout(saveTimeoutId)
+    if (statusTimeoutId) clearTimeout(statusTimeoutId)
 })
 </script>

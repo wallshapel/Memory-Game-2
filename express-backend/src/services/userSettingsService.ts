@@ -15,6 +15,7 @@ export interface UserSettingsService {
     effectsVolume: number;
     effectsMuted: boolean;
   }): Promise<IUserSettings>;
-
   getLatestUserSettings(): Promise<IUserSettings | null>;
+  userExists(name: string): Promise<boolean>;
+  getUserSettingsByName(name: string): Promise<IUserSettings | null>;
 }

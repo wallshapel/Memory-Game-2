@@ -25,3 +25,25 @@ export const fetchLatestSettings = async (req: Request, res: Response) => {
     return res.status(400).json({ error: err.message });
   }
 };
+
+// GET /api/user-settings/exists/:name
+export const checkUserExists = async (req: Request, res: Response) => {
+  try {
+    const name = req.params.name;
+    const exists = await userSettingsService.userExists(name);
+    return res.status(200).json({ exists });
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message });
+  }
+};
+
+// GET /api/user-settings/name/:name
+export const fetchUserByName = async (req: Request, res: Response) => {
+  try {
+    const name = req.params.name;
+    const settings = await userSettingsService.getUserSettingsByName(name);
+    return res.status(200).json(settings);
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message });
+  }
+};

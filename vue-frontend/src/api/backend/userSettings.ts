@@ -10,3 +10,17 @@ export const saveUserSettings = async (settings: IUserSettings) => {
   const { data } = await api.post<IUserSettings>("/user-settings", settings);
   return data;
 };
+
+export const checkUserExists = async (name: string) => {
+  const { data } = await api.get<{ exists: boolean }>(
+    `/user-settings/exists/${encodeURIComponent(name)}`
+  );
+  return data.exists;
+};
+
+export const getUserSettingsByName = async (name: string) => {
+  const { data } = await api.get<IUserSettings>(
+    `/user-settings/name/${encodeURIComponent(name)}`
+  );
+  return data;
+};

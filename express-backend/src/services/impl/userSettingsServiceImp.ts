@@ -31,7 +31,8 @@ export class UserSettingsServiceImpl implements UserSettingsService {
       effectsMuted: data.effectsMuted,
     };
 
-    if (data.coverType === "uploaded") update.coverFileName = data.coverFileName;
+    if (data.coverType === "uploaded")
+      update.coverFileName = data.coverFileName;
     else update.coverFileName = undefined;
 
     // Find by name (unique for user), upsert
@@ -45,8 +46,15 @@ export class UserSettingsServiceImpl implements UserSettingsService {
   }
 
   async getLatestUserSettings(): Promise<IUserSettings | null> {
-    return UserSettings
-      .findOne({})
-      .sort({ createdAt: -1 });
+    return UserSettings.findOne({}).sort({ createdAt: -1 });
+  }
+
+  async userExists(name: string): Promise<boolean> {
+    const result = await UserSettings.exists({ name });
+    return result !== null;
+  }
+
+  async getUserSettingsByName(name: string): Promise<IUserSettings | null> {
+    return UserSettings.findOne({ name });
   }
 }
