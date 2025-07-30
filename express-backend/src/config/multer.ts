@@ -3,10 +3,10 @@ import path from "path";
 import fs from "fs";
 import { ROOT_PATH } from "../utils/rootPath";
 
-// Directory for storing cover images (en raíz del proyecto)
+// Directory for storing cover images 
 const coversDir = path.join(ROOT_PATH, "public", "uploads", "images", "covers");
 
-// Ensure directory exists (si quieres crearla solo si no existe)
+// Ensure directory exists 
 fs.mkdirSync(coversDir, { recursive: true });
 
 const storage = multer.diskStorage({
