@@ -40,7 +40,7 @@ const store = usePlayerStore()
 const audioStore = useAudioStore()
 const router = useRouter()
 
-const name = ref(store.name)
+const name = ref(store.name || "")
 const statusMessage = ref<string | null>(null)
 
 const nameInput = ref<any>(null)
@@ -52,33 +52,33 @@ let focusedIndex = 0
 let statusTimeoutId: number | null = null
 
 const isNameValid = computed(() => {
-    const trimmed = name.value.trim()
+    const trimmed = (name.value ?? "").trim()
     return trimmed.length > 0 && trimmed.length <= 18
 })
 
 const handleSave = async () => {
-  if (!isNameValid.value) return;
+    if (!isNameValid.value) return;
 
-  const trimmedName = name.value.trim();
-  audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
+    const trimmedName = name.value.trim();
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
 
-  const exists = await checkUserExists(trimmedName);
+    const exists = await checkUserExists(trimmedName);
 
-  if (exists) {
-    await store.loadUserSettingsByName(trimmedName);
-    statusMessage.value = "✔ User loaded";
-  } else {
-    await store.resetToDefaults();
-    store.setName(trimmedName);
-    await store.saveToBackend();
-    statusMessage.value = "✔ New user created";
-  }
+    if (exists) {
+        await store.loadUserSettingsByName(trimmedName);
+        statusMessage.value = "✔ User loaded";
+    } else {
+        await store.resetToDefaults();
+        store.setName(trimmedName);
+        await store.saveToBackend();
+        statusMessage.value = "✔ New user created";
+    }
 
-  if (statusTimeoutId) clearTimeout(statusTimeoutId);
-  statusTimeoutId = setTimeout(() => {
-    statusMessage.value = null;
-    statusTimeoutId = null;
-  }, 2000);
+    if (statusTimeoutId) clearTimeout(statusTimeoutId);
+    statusTimeoutId = setTimeout(() => {
+        statusMessage.value = null;
+        statusTimeoutId = null;
+    }, 2000);
 };
 
 const handleBack = () => {
@@ -126,9 +126,8 @@ const focusElement = (index: number) => {
             input.focus()
             input.select()
         }
-    } else {
-        el.$el?.focus?.()
-    }
+    } else 
+        el.$el?.focus?.()    
     audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
 }
 
