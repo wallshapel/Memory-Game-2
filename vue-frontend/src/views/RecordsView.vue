@@ -51,12 +51,13 @@ td {
 
 <script setup lang="ts">
 import { onMounted, ref, onBeforeUnmount, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getTopRecords } from '../api/backend/records'
 import { useAudioStore } from '../store/audioStore'
-import { GAME_EFFECTS } from '../constants/assets'
+import { GAME_EFFECTS, OTHER_MUSICAL_BACKGROUNDS } from '../constants/assets'
 
 const router = useRouter()
+const route = useRoute()
 const records = ref<any[]>([])
 const audioStore = useAudioStore()
 const backButton = ref<any>(null)
@@ -77,7 +78,21 @@ const goBack = () => {
     router.push('/menu')
 }
 
+// 🎵 Background music for records
+const checkAndPlayMusic = () => {
+    const expectedFile = OTHER_MUSICAL_BACKGROUNDS.records
+    const currentSrc = audioStore.bgMusicInstance?.src || ''
+    const isExpectedTrackPlaying =
+        currentSrc.includes(expectedFile) && !audioStore.bgMusicInstance?.paused
+
+    if (!isExpectedTrackPlaying) {
+        audioStore.stopAllAudio()
+        audioStore.playRecordsMusicLoop()
+    }
+}
+
 onMounted(async () => {
+    if (route.path === '/records') checkAndPlayMusic()
     try {
         records.value = await getTopRecords()
     } catch (err) {

@@ -107,6 +107,7 @@ export const BACKGROUND_MUSIC = {
 export const OTHER_MUSICAL_BACKGROUNDS = {
   gameplay: "feuxfollets",
   settings: "liebestraum",
+  records: "aquarium",
 } as const;
 
 // 🎵 Music for game results

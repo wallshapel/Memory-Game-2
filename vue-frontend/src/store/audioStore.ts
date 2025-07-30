@@ -146,6 +146,19 @@ export const useAudioStore = defineStore("audio", {
       this.bgMusicInstance = audio;
     },
 
+    // 🏆 Records
+    playRecordsMusicLoop() {
+      this.stopAllAudio();
+
+      const file = OTHER_MUSICAL_BACKGROUNDS.records;
+      const audio = this.playAudio(file, "music", {
+        loop: true,
+        volume: this.musicVolume / 100,
+      });
+
+      this.bgMusicInstance = audio;
+    },
+
     // 🚫 Stop all audio
     stopAllAudio() {
       this.effectInstance?.pause();
