@@ -7,6 +7,11 @@ export const BASE_PATH_IMAGE_RESOURCES = {
   COVERS_PATH: "/images/covers/",
 };
 
+// Base path for images resources from backend
+export const FULL_BASE_PATH_IMAGE_RESOURCES = {
+  COVERS_PATH: `${import.meta.env.VITE_API_BASE}/uploads/images/covers/`,
+};
+
 // 🎆 Victory animation
 export const FIREWORK_GIF = "/images/fireworks.gif";
 

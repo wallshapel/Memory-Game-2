@@ -58,7 +58,7 @@ import { ref, defineAsyncComponent, onMounted, onBeforeUnmount, computed } from 
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
-import { BASE_PATH_IMAGE_RESOURCES, DEFAULT_COVER_IMAGE, GAME_EFFECTS } from '../constants/assets'
+import { BASE_PATH_IMAGE_RESOURCES, DEFAULT_COVER_IMAGE, FULL_BASE_PATH_IMAGE_RESOURCES, GAME_EFFECTS } from '../constants/assets'
 import { uploadCover } from '../api/backend/cover'
 
 const AlertModal = defineAsyncComponent(() => import('../components/AlertModal.vue'))
@@ -102,7 +102,8 @@ const uploadedUrl = computed(() => {
         return URL.createObjectURL(store.coverFile);
     // If it is already saved in the backend and selected the option
     if (store.coverType === "uploaded" && store.coverFileName)
-        return `${import.meta.env.VITE_API_BASE}/uploads/images/covers/${store.coverFileName}`;
+        //return `${import.meta.env.VITE_API_BASE}/uploads/images/covers/${store.coverFileName}`;
+        return `${FULL_BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${store.coverFileName}`;
     return null;
 });
 

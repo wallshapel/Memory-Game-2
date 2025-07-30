@@ -78,6 +78,7 @@ import { useGameStore } from '../store/gameStore'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
 import { BASE_PATH_IMAGE_RESOURCES, DEFAULT_COVER_IMAGE, GAME_EFFECTS } from '../constants/assets'
+import { FULL_BASE_PATH_IMAGE_RESOURCES } from '../constants/assets'
 
 const game = useGameStore()
 const store = usePlayerStore()
@@ -117,8 +118,8 @@ watch(() => props.isFocused, (focused) => {
 })
 
 const coverImage = computed(() => {
-    if (store.coverType === 'uploaded' && store.coverFile)
-        return URL.createObjectURL(store.coverFile)
-    return `${BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${DEFAULT_COVER_IMAGE}`
-})
+  if (store.coverType === 'uploaded' && store.coverFileName)
+    return `${FULL_BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${store.coverFileName}`;
+  return `${BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${DEFAULT_COVER_IMAGE}`;
+});
 </script>
