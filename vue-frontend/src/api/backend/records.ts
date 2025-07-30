@@ -6,7 +6,9 @@ export const getTopRecords = async () => {
   return data;
 };
 
-export const trySaveRecord = async (record: Omit<IGameRecord, "effectiveness" | "createdAt">) => {
+export const trySaveRecord = async (
+  record: Omit<IGameRecord, "effectiveness" | "createdAt">
+) => {
   const { data } = await api.post("/records", record);
   return data;
 };
@@ -20,5 +22,10 @@ export const saveRecord = async (record: {
   time: number;
 }) => {
   const { data } = await api.post("/records", record);
+  return data;
+};
+
+export const getBestRecordForUser = async (name: string) => {
+  const { data } = await api.get(`/records/best/${name}`);
   return data;
 };

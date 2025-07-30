@@ -19,6 +19,8 @@ export const useGameStore = defineStore("game", () => {
   const playerStore = usePlayerStore();
   const audioStore = useAudioStore();
   const showSettingsModal = ref(false);
+  const isCountdownMode = ref(false);
+  const countdownLimit = ref(0);
 
   const cards = ref<ICardData[]>([]);
   const firstCard = ref<ICardData | null>(null);
@@ -35,6 +37,8 @@ export const useGameStore = defineStore("game", () => {
 
   const milliseconds = ref(0);
   let interval: number | null = null;
+
+  const initialMistakesAllowed = ref<number | null>(null);
 
   // 🕒 Timeout references to prevent orphan timers
   let presentationTimeout: number | null = null;
@@ -120,6 +124,11 @@ export const useGameStore = defineStore("game", () => {
         });
 
         chronometerStartTimeout = setTimeout(() => {
+          failCount.value =
+            isCountdownMode.value && initialMistakesAllowed.value !== null
+              ? initialMistakesAllowed.value
+              : 0;
+              
           resetChronometer();
           startChronometer();
           cardsAreReady.value = true;
@@ -174,7 +183,8 @@ export const useGameStore = defineStore("game", () => {
       checkWin();
     } else {
       audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
-      failCount.value++;
+      if (isCountdownMode.value) failCount.value--;
+      else failCount.value++;
       setTimeout(() => {
         firstCard.value!.flipped = false;
         secondCard.value!.flipped = false;
@@ -201,7 +211,11 @@ export const useGameStore = defineStore("game", () => {
 
   // 🧠 Watch failCount and trigger Game Over after delay
   watch(failCount, async (newVal) => {
-    if (newVal >= maxFails.value && !hasLost.value && !hasWon.value) {
+    const failCondition = isCountdownMode.value
+      ? newVal <= 0
+      : newVal >= maxFails.value;
+
+    if (failCondition && !hasLost.value && !hasWon.value) {
       hasLost.value = true;
       stopChronometer();
       audioStore.stopAllAudio();
@@ -253,6 +267,9 @@ export const useGameStore = defineStore("game", () => {
 
     audioStore.stopAllAudio();
     audioStore._wasBackgroundPlaying = false;
+
+    isCountdownMode.value = false;
+    countdownLimit.value = 0;
   }
 
   const formattedTime = computed(() => {
@@ -267,8 +284,26 @@ export const useGameStore = defineStore("game", () => {
   function startChronometer() {
     if (interval !== null) return;
     interval = setInterval(() => {
-      milliseconds.value += 10;
+      if (isCountdownMode.value) {
+        milliseconds.value -= 10;
+        if (milliseconds.value <= 0) {
+          milliseconds.value = 0;
+          stopChronometer();
+          handleTimeOut();
+        }
+      } else milliseconds.value += 10;
     }, 10);
+  }
+
+  function handleTimeOut() {
+    if (!hasWon.value && !hasLost.value) {
+      hasLost.value = true;
+      audioStore.stopAllAudio();
+      audioStore.playEffect(GAME_SCORE_MUSIC.MUSIC_GAME_OVER);
+      resultModalTimeout = setTimeout(() => {
+        showResultModal.value = true;
+      }, RESULT_MODAL_DELAY_MS);
+    }
   }
 
   function stopChronometer() {
@@ -280,7 +315,7 @@ export const useGameStore = defineStore("game", () => {
 
   function resetChronometer() {
     stopChronometer();
-    milliseconds.value = 0;
+    milliseconds.value = isCountdownMode.value ? countdownLimit.value : 0;
   }
 
   async function saveGameRecord() {
@@ -294,6 +329,12 @@ export const useGameStore = defineStore("game", () => {
       mistakes: failCount.value,
       time: milliseconds.value,
     });
+  }
+
+  function setCountdownMode(ms: number, allowedMistakes: number) {
+    isCountdownMode.value = true;
+    countdownLimit.value = ms;
+    initialMistakesAllowed.value = allowedMistakes;
   }
 
   return {
@@ -320,5 +361,6 @@ export const useGameStore = defineStore("game", () => {
     startChronometer,
     stopChronometer,
     resetChronometer,
+    setCountdownMode,
   };
 });

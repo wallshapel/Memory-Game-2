@@ -1,3 +1,4 @@
+import type { IGameRecord } from "../../interfaces/IGameRecord";
 import type { IUserSettings } from "../../interfaces/IUserSettings";
 import api from "./apiConfig";
 
@@ -21,6 +22,13 @@ export const checkUserExists = async (name: string) => {
 export const getUserSettingsByName = async (name: string) => {
   const { data } = await api.get<IUserSettings>(
     `/user-settings/name/${encodeURIComponent(name)}`
+  );
+  return data;
+};
+
+export const getRecordByName = async (name: string) => {
+  const { data } = await api.get<IGameRecord | null>(
+    `/records/name/${encodeURIComponent(name)}`
   );
   return data;
 };

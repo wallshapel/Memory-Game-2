@@ -45,9 +45,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineAsyncComponent, onMounted, onUnmounted } from 'vue'
+import { ref, defineAsyncComponent, onMounted, onUnmounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAudioStore } from '../store/audioStore'
 import { useGameStore } from '../store/gameStore'
+import { getUserSettingsByName } from '../api/backend/userSettings'
+import { usePlayerStore } from '../store/playerStore'
+import type { IUserSettings } from '../interfaces/IUserSettings'
+import type { DIFFICULTY_LEVELS } from '../constants/assets'
 
 // Components
 const GameSettingsModal = defineAsyncComponent(() => import('../components/GameSettingsModal.vue'))
@@ -59,28 +64,77 @@ const GameResultModal = defineAsyncComponent(() => import('../components/GameRes
 // Stores
 const game = useGameStore()
 const audio = useAudioStore()
+const playerStore = usePlayerStore()
 
-// Ref chronometer
 const chronometerRef = ref()
+const route = useRoute()
 
-// Global keyboard handler
-function onKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') 
-    game.showSettingsModal = !game.showSettingsModal
-}
+const isTimeAttack = computed(() => route.query.timeAttack === '1')
+const wasTimeAttack = ref(false)
 
-onMounted(() => {
+const timeLimit = computed(() => {
+  const raw = route.query.timeLimit
+  return typeof raw === 'string' ? parseInt(raw) : null
+})
+
+let originalSettings: IUserSettings | null = null
+
+onMounted(async () => {
+  wasTimeAttack.value = isTimeAttack.value
+
   window.addEventListener('keydown', onKeydown)
+
+  if (isTimeAttack.value && timeLimit.value) {
+    // Fetch & store backup before overwriting
+    if (playerStore.name) {
+      try {
+        const data = await getUserSettingsByName(playerStore.name)
+        originalSettings = data
+      } catch (err) {
+        console.error('❌ Failed to fetch player settings:', err)
+      }
+    }
+
+    // Apply record config
+    const cards = route.query.totalCards
+    const difficulty = route.query.difficulty
+    const mistakes = route.query.mistakes
+    const parsedMistakes = typeof mistakes === 'string' ? parseInt(mistakes) : 0
+
+    if (typeof cards === 'string') playerStore.totalCards = parseInt(cards)
+
+    if (typeof difficulty === 'string') {
+      const parsedDiff = parseInt(difficulty)
+      if ([0, 1, 2].includes(parsedDiff))
+        playerStore.difficulty = parsedDiff as keyof typeof DIFFICULTY_LEVELS
+    }
+
+    game.setCountdownMode(timeLimit.value, parsedMistakes)
+    chronometerRef.value?.startCountdown?.(timeLimit.value)
+  }
+
   game.initializeGame()
 })
 
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') game.showSettingsModal = !game.showSettingsModal
+}
+
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeydown)
-  // Audio cleaning and playback
   audio.stopAllAudio()
   audio.resumeMusicIfWasPlaying()
   game.clearGame()
   game.showSettingsModal = false
   game.resetChronometer()
+
+  if (wasTimeAttack.value && originalSettings) {
+    playerStore.totalCards = originalSettings.totalCards
+
+    const parsedDiff = parseInt(originalSettings.difficulty.toString())
+    if ([0, 1, 2].includes(parsedDiff))
+      playerStore.difficulty = parsedDiff as keyof typeof DIFFICULTY_LEVELS
+  }
 })
+
 </script>

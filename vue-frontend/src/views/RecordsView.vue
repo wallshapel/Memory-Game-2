@@ -4,6 +4,20 @@ td {
     padding: 8px 12px;
     white-space: nowrap;
 }
+
+.hoverable {
+    cursor: pointer;
+    background-color: #f0f8ff;
+}
+
+.hoverable:hover {
+    background-color: #e6f2ff;
+}
+
+.disabled-row {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 </style>
 
 <template>
@@ -16,6 +30,7 @@ td {
                     <v-table dense>
                         <thead>
                             <tr>
+                                <th class="text-left"></th>
                                 <th class="text-left">#</th>
                                 <th class="text-left">Name</th>
                                 <th class="text-left">Difficulty</th>
@@ -27,7 +42,14 @@ td {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(record, index) in records" :key="record._id">
+                            <tr v-for="(record, index) in records" :key="record._id" :class="{
+                                'hoverable': isRecordSelectable(index),
+                                'disabled-row': !isRecordSelectable(index)
+                            }" @click="isRecordSelectable(index) ? startTimeAttack(record) : null">
+                                <td>
+                                    <v-icon v-if="isRecordSelectable(index)" small
+                                        color="primary">mdi-flag-checkered</v-icon>
+                                </td>
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ record.name }}</td>
                                 <td>{{ difficultyLabel(record.difficulty) }}</td>
@@ -52,19 +74,27 @@ td {
 <script setup lang="ts">
 import { onMounted, ref, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getTopRecords } from '../api/backend/records'
+import { getBestRecordForUser, getTopRecords } from '../api/backend/records'
+import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
 import { GAME_EFFECTS, OTHER_MUSICAL_BACKGROUNDS } from '../constants/assets'
 
 const router = useRouter()
 const route = useRoute()
 const records = ref<any[]>([])
+const playerStore = usePlayerStore()
+const myBestRecord = ref<any>(null)
+const selectableIndex = ref<number | null>(null)
+
 const audioStore = useAudioStore()
 const backButton = ref<any>(null)
 
-const difficultyLabel = (value: number): string => {
-    return ['Easy', 'Medium', 'Hard'][value] || 'Unknown'
+const isRecordSelectable = (index: number): boolean => {
+    return selectableIndex.value !== null && index <= selectableIndex.value
 }
+
+const difficultyLabel = (value: number): string =>
+    ['Easy', 'Medium', 'Hard'][value] || 'Unknown'
 
 const formatTime = (ms: number): string => {
     const minutes = Math.floor(ms / 60000)
@@ -78,7 +108,19 @@ const goBack = () => {
     router.push('/menu')
 }
 
-// 🎵 Background music for records
+const startTimeAttack = (record: any) => {
+    router.push({
+        path: '/game',
+        query: {
+            timeAttack: '1',
+            timeLimit: record.time.toString(),
+            totalCards: record.totalCards.toString(),
+            difficulty: record.difficulty.toString(),
+            mistakes: record.mistakes.toString()
+        }
+    })
+}
+
 const checkAndPlayMusic = () => {
     const expectedFile = OTHER_MUSICAL_BACKGROUNDS.records
     const currentSrc = audioStore.bgMusicInstance?.src || ''
@@ -93,10 +135,23 @@ const checkAndPlayMusic = () => {
 
 onMounted(async () => {
     if (route.path === '/records') checkAndPlayMusic()
+
     try {
         records.value = await getTopRecords()
     } catch (err) {
         console.error('Failed to load records:', err)
+    }
+
+    if (playerStore.name) {
+        try {
+            myBestRecord.value = await getBestRecordForUser(playerStore.name)
+
+            const idx = records.value.findIndex(r => r._id === myBestRecord.value._id)
+            selectableIndex.value = idx >= 0 ? idx : null
+        } catch {
+            myBestRecord.value = null
+            selectableIndex.value = null
+        }
     }
 
     nextTick(() => {
@@ -107,12 +162,10 @@ onMounted(async () => {
 })
 
 const handleKeydown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape')
-        goBack()
+    if (e.key === 'Escape') goBack()
 }
 
 onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleKeydown)
 })
-
 </script>
