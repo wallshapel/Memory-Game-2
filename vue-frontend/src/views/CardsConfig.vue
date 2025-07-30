@@ -15,7 +15,7 @@
                             <v-col cols="6" class="text-center mx-auto">
                                 <v-card class="pa-2" rounded="lg" :elevation="store.coverType === 'default' ? 10 : 2"
                                     :class="store.coverType === 'default' ? 'border border-primary bg-grey-lighten-4' : ''"
-                                    style="cursor: pointer;" @click="store.setCoverType('default')">
+                                    style="cursor: pointer;" @click="selectDefaultCover">
                                     <v-img :src="defaultImage" aspect-ratio="2/3" class="mb-2" contain />
                                     <span class="text-caption">Default</span>
                                 </v-card>
@@ -97,15 +97,26 @@ const handleBack = () => {
 }
 
 const uploadedUrl = computed(() => {
-    // If there is a newly uploaded local file, show local preview
+    if (store.coverType === "default") return null;
+
     if (store.coverFile)
         return URL.createObjectURL(store.coverFile);
-    // If it is already saved in the backend and selected the option
+
     if (store.coverType === "uploaded" && store.coverFileName)
-        //return `${import.meta.env.VITE_API_BASE}/uploads/images/covers/${store.coverFileName}`;
         return `${FULL_BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${store.coverFileName}`;
+
     return null;
 });
+
+const selectDefaultCover = async () => {
+    store.setCoverType("default");
+    store.setCoverFile(null);
+    store.setCoverFileName(undefined);
+
+    if (store.name && store.name.trim().length > 0) {
+        await store.saveToBackend();
+    }
+};
 
 // Handle file upload
 const handleFile = async (files: File[]) => {
