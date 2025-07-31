@@ -1,4 +1,4 @@
 // src/services/coverService.ts
-export interface coverService {
+export interface CoverService {
   processCoverUpload(username: string, filename: string): Promise<string>;
 }

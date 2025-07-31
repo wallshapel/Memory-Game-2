@@ -1,3 +1,4 @@
+// src/models/UserSettings.ts
 import mongoose, { Schema, Document } from "mongoose";
 import { IUserSettings } from "../interfaces/IUserSettings";
 

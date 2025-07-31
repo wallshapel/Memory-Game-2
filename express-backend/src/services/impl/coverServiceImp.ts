@@ -1,35 +1,42 @@
 // src/services/impl/coverServiceImp.ts
-import fs from "fs";
-import path from "path";
-import UserSettings from "../../models/UserSettings";
-import { coverService } from "../coverService";
+import { CoverService } from "../coverService";
+import { CoverRepository } from "../../repositories/CoverRepository";
+import { CoverRepositoryImp } from "../../repositories/impl/CoverRepositoryImp";
+import { FileManager } from "../../utils/FileManager";
 import { ROOT_PATH } from "../../utils/rootPath";
 
-export class CoverServiceImp implements coverService {
+/**
+ * Service implementation for processing cover uploads.
+ */
+export class CoverServiceImp implements CoverService {
+  private coverRepository: CoverRepository;
+
+  constructor(coverRepository: CoverRepository = new CoverRepositoryImp()) {
+    this.coverRepository = coverRepository;
+  }
+
   async processCoverUpload(
     username: string,
     filename: string
   ): Promise<string> {
     if (!username || username.trim().length === 0)
-      throw new Error("User name is required to upload a cover image.");
+      throw new Error("Username is required to upload a cover image.");
 
-    // Search for the user's document
-    const userSettings = await UserSettings.findOne({ name: username });
-    if (userSettings && userSettings.coverFileName) {
-      // Delete the previous image, if it exists
-      const oldPath = path.join(
+    // Find previous cover for user
+    const coverInfo = await this.coverRepository.findCoverByUsername(username);
+
+    // Delete previous image if exists
+    if (coverInfo && coverInfo.coverFileName) {
+      const oldPath = FileManager.getCoverImagePath(
         ROOT_PATH,
-        "public/uploads/images/covers",
-        userSettings.coverFileName
+        coverInfo.coverFileName
       );
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      FileManager.delete(oldPath);
     }
-    // Update the field coverFileName and coverType
-    await UserSettings.findOneAndUpdate(
-      { name: username },
-      { coverFileName: filename, coverType: "uploaded" },
-      { new: true, upsert: false }
-    );
+
+    // Update with new cover information
+    await this.coverRepository.updateCover(username, filename, "uploaded");
+
     return filename;
   }
 }
