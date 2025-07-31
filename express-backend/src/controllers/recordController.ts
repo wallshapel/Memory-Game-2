@@ -1,8 +1,9 @@
+// src/controllers/recordController.ts
 import { Request, Response } from "express";
-import { RecordServiceImpl } from "../services/impl/recordServiceImpl";
+import { RecordServiceImp } from "../services/impl/recordServiceImp";
 import { RecordService } from "../services/recordService";
 
-const recordService: RecordService = new RecordServiceImpl();
+const recordService: RecordService = new RecordServiceImp();
 
 export const getTopRecords = async (req: Request, res: Response) => {
   try {

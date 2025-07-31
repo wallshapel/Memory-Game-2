@@ -5,7 +5,7 @@ const mockTrySaveRecord = vi.fn();
 
 vi.doMock("../../src/services/impl/gameRecordServiceImp", () => {
   return {
-    GameRecordServiceImpl: vi.fn().mockImplementation(() => ({
+    GameRecordServiceImp: vi.fn().mockImplementation(() => ({
       trySaveRecord: mockTrySaveRecord,
     })),
   };

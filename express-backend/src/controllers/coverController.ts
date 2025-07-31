@@ -1,8 +1,9 @@
+// src/controllers/coverController.ts
 import { Request, Response } from "express";
 import { coverService } from "../services/coverService";
-import { CoverServiceImpl } from "../services/impl/coverServiceImp";
+import { CoverServiceImp } from "../services/impl/coverServiceImp";
 
-const coverService: coverService = new CoverServiceImpl();
+const coverService: coverService = new CoverServiceImp();
 
 // POST /api/covers
 export const uploadCover = async (req: Request, res: Response) => {

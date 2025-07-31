@@ -1,8 +1,9 @@
+// src/services/impl/recordServiceImp.ts
 import { RecordService } from "../recordService";
 import GameRecord from "../../models/GameRecord";
 import { IGameRecord } from "../../interfaces/IGameRecord";
 
-export class RecordServiceImpl implements RecordService {
+export class RecordServiceImp implements RecordService {
   async getTopRecords(): Promise<IGameRecord[]> {
     return (await GameRecord.find()
       .sort({ effectiveness: -1, time: 1 })

@@ -1,3 +1,4 @@
+// tests/controllers/recordController.test.ts
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock service methods before importing the controller
@@ -5,9 +6,9 @@ const mockGetTopRecords = vi.fn();
 const mockSave = vi.fn();
 const mockGetBestUserRecord = vi.fn();
 
-vi.doMock("../../src/services/impl/recordServiceImpl", () => {
+vi.doMock("../../src/services/impl/recordServiceImp", () => {
   return {
-    RecordServiceImpl: vi.fn().mockImplementation(() => ({
+    RecordServiceImp: vi.fn().mockImplementation(() => ({
       getTopRecords: mockGetTopRecords,
       save: mockSave,
       getBestUserRecord: mockGetBestUserRecord,

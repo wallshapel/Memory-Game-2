@@ -2,7 +2,7 @@ import UserSettings from "../../models/UserSettings";
 import { ISaveUpdateUserSettings, IUserSettings, IUserSettingsUpdate } from "../../interfaces/IUserSettings";
 import { UserSettingsService } from "../userSettingsService";
 
-export class UserSettingsServiceImpl implements UserSettingsService {
+export class UserSettingsServiceImp implements UserSettingsService {
   async saveOrUpdateUserSettings(data: ISaveUpdateUserSettings): Promise<IUserSettings> {
     // Upsert (update if exists, otherwise insert)
     const update: IUserSettingsUpdate = {

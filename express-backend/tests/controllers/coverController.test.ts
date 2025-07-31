@@ -36,7 +36,7 @@ const mockCoverService = {
 
 vi.mock("../../src/services/impl/coverServiceImp", () => {
   return {
-    CoverServiceImpl: class {
+    CoverServiceImp: class {
       async processCoverUpload(username: string, filename: string) {
         // Call the mock
         return mockCoverService.processCoverUpload(username, filename);

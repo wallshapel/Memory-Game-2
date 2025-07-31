@@ -1,9 +1,9 @@
 import { ISaveRecord } from "../../interfaces/IGameRecord";
 import GameRecord from "../../models/GameRecord";
-import type { GameRecordComparable } from "../../types/GameRecordComparabke";
+import { compareRecords } from "../../utils/compareRecords";
 import { GameRecordService } from "../gameRecordService";
 
-export class GameRecordServiceImpl implements GameRecordService {
+export class GameRecordServiceImp implements GameRecordService {
   async trySaveRecord(recordData: ISaveRecord): Promise<boolean> {
     // Calculate effectiveness
     const attempts = recordData.hits + recordData.mistakes;
@@ -62,17 +62,4 @@ export class GameRecordServiceImpl implements GameRecordService {
     await GameRecord.create(newRecord);
     return true;
   }
-}
-
-// Helper
-function compareRecords(
-  a: GameRecordComparable,
-  b: GameRecordComparable
-): number {
-  if (a.totalCards !== b.totalCards) return b.totalCards - a.totalCards; // DESC
-  if (a.time !== b.time) return a.time - b.time; // ASC
-  if (a.difficulty !== b.difficulty) return b.difficulty - a.difficulty; // DESC
-  if (a.effectiveness !== b.effectiveness)
-    return b.effectiveness - a.effectiveness; // DESC
-  return 0;
 }

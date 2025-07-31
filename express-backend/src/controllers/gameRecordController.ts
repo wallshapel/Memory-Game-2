@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { GameRecordService } from "../services/gameRecordService";
-import { GameRecordServiceImpl } from "../services/impl/gameRecordServiceImp";
+import { GameRecordServiceImp } from "../services/impl/gameRecordServiceImp";
 import GameRecord from "../models/GameRecord";
 
-const gameRecordService: GameRecordService = new GameRecordServiceImpl();
+const gameRecordService: GameRecordService = new GameRecordServiceImp();
 
 /**
  * POST /api/records

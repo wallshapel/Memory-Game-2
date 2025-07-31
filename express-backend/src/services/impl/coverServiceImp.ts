@@ -1,10 +1,11 @@
+// src/services/impl/coverServiceImp.ts
 import fs from "fs";
 import path from "path";
 import UserSettings from "../../models/UserSettings";
 import { coverService } from "../coverService";
 import { ROOT_PATH } from "../../utils/rootPath";
 
-export class CoverServiceImpl implements coverService {
+export class CoverServiceImp implements coverService {
   async processCoverUpload(
     username: string,
     filename: string

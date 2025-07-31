@@ -1,3 +1,4 @@
+// src/routes/coverRoutes.ts
 import { Router } from "express";
 import coverUpload from "../config/multer";
 import { uploadCover } from "../controllers/coverController";

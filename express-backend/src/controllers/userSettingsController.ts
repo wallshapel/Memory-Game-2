@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { UserSettingsService } from "../services/userSettingsService";
-import { UserSettingsServiceImpl } from "../services/impl/userSettingsServiceImp";
+import { UserSettingsServiceImp } from "../services/impl/userSettingsServiceImp";
 
-const userSettingsService: UserSettingsService = new UserSettingsServiceImpl();
+const userSettingsService: UserSettingsService = new UserSettingsServiceImp();
 
 // POST or PUT /api/user-settings
 export const saveSettings = async (req: Request, res: Response) => {

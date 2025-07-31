@@ -8,7 +8,7 @@ const mockGetUserSettingsByName = vi.fn();
 
 vi.doMock("../../src/services/impl/userSettingsServiceImp", () => {
   return {
-    UserSettingsServiceImpl: vi.fn().mockImplementation(() => ({
+    UserSettingsServiceImp: vi.fn().mockImplementation(() => ({
       saveOrUpdateUserSettings: mockSaveOrUpdateUserSettings,
       getLatestUserSettings: mockGetLatestUserSettings,
       userExists: mockUserExists,

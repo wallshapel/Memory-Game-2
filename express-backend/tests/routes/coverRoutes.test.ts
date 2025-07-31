@@ -1,3 +1,4 @@
+// tests/routes/coverRoutes.test.ts
 import request from "supertest";
 import path from "path";
 import app from "../../src/app";
@@ -7,7 +8,7 @@ import UserSettings from "../../src/models/UserSettings";
 
 vi.mock("../../src/services/impl/coverServiceImp", () => {
   return {
-    CoverServiceImpl: class {
+    CoverServiceImp: class {
       async processCoverUpload(username: string, filename: string) {
         return filename;
       }
