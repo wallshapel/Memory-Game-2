@@ -2,10 +2,23 @@ import request from "supertest";
 import app from "../../src/app";
 import mongoose from "mongoose";
 import GameRecord from "../../src/models/GameRecord";
-import { describe, it, beforeAll, afterAll, beforeEach, expect } from "vitest";
+import { describe, it, beforeAll, afterAll, afterEach, expect } from "vitest";
 
 beforeAll(async () => {
   await mongoose.connect(process.env.MONGO_URI!);
+});
+
+afterEach(async () => {
+  try {
+    await GameRecord.deleteMany({
+      $or: [
+        { username: { $in: ["__test_user__", "a", "b", "c"] } },
+        { name: { $in: ["Record 1", "Record A", "Record B", "Record C"] } },
+      ],
+    });
+  } catch (err: any) {
+    console.warn("⚠️ Error cleaning test game records:", err.message);
+  }
 });
 
 afterAll(async () => {
@@ -13,13 +26,9 @@ afterAll(async () => {
 });
 
 describe("Game Record Routes", () => {
-  beforeEach(async () => {
-    await GameRecord.deleteMany({});
-  });
-
   it("should save a new valid record", async () => {
     const record = {
-      username: "legato",
+      username: "__test_user__",
       name: "Record 1",
       time: 12000,
       totalCards: 20,

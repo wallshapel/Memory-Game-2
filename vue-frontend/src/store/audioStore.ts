@@ -39,9 +39,7 @@ export const useAudioStore = defineStore("audio", {
       }
       this.musicTrack = track;
 
-      if (!this.musicMuted) {
-        this.playMusic();
-      }
+      if (!this.musicMuted) this.playMusic();
     },
 
     setMusicMuted(muted: boolean) {

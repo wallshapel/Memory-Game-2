@@ -113,9 +113,8 @@ const selectDefaultCover = async () => {
     store.setCoverFile(null);
     store.setCoverFileName(undefined);
 
-    if (store.name && store.name.trim().length > 0) {
+    if (store.name && store.name.trim().length > 0)
         await store.saveToBackend();
-    }
 };
 
 // Handle file upload
