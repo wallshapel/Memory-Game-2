@@ -14,9 +14,8 @@ export class FileManager {
    * Deletes the file at the given path.
    */
   static delete(filePath: string): void {
-    if (fs.existsSync(filePath)) {
+    if (fs.existsSync(filePath)) 
       fs.unlinkSync(filePath);
-    }
   }
 
   /**
