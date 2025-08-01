@@ -2,14 +2,18 @@
 import { Request, Response } from "express";
 import { UserSettingsService } from "../services/userSettingsService";
 
+const UNKNOWN_ERROR_MSG = "Unknown error";
+
 // POST or PUT /api/user-settings
 export const saveSettings =
   (service: UserSettingsService) => async (req: Request, res: Response) => {
     try {
       const settings = await service.saveOrUpdateUserSettings(req.body);
       return res.status(200).json(settings);
-    } catch (err: any) {
-      return res.status(400).json({ error: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error) 
+        return res.status(400).json({ error: err.message });
+      return res.status(400).json({ error: UNKNOWN_ERROR_MSG });
     }
   };
 
@@ -19,8 +23,10 @@ export const fetchLatestSettings =
     try {
       const settings = await service.getLatestUserSettings();
       return res.status(200).json(settings || null);
-    } catch (err: any) {
-      return res.status(400).json({ error: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error)
+        return res.status(400).json({ error: err.message });
+      return res.status(400).json({ error: UNKNOWN_ERROR_MSG });
     }
   };
 
@@ -31,8 +37,10 @@ export const checkUserExists =
       const name = req.params.name;
       const exists = await service.userExists(name);
       return res.status(200).json({ exists });
-    } catch (err: any) {
-      return res.status(400).json({ error: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error)
+        return res.status(400).json({ error: err.message });
+      return res.status(400).json({ error: UNKNOWN_ERROR_MSG });
     }
   };
 
@@ -43,7 +51,9 @@ export const fetchUserByName =
       const name = req.params.name;
       const settings = await service.getUserSettingsByName(name);
       return res.status(200).json(settings);
-    } catch (err: any) {
-      return res.status(400).json({ error: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error)
+        return res.status(400).json({ error: err.message });
+      return res.status(400).json({ error: UNKNOWN_ERROR_MSG });
     }
   };

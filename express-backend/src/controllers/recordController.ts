@@ -1,4 +1,3 @@
-// src/controllers/recordController.ts
 import { Request, Response } from "express";
 import { RecordService } from "../services/recordService";
 
@@ -13,8 +12,11 @@ export const saveRecord =
       const result = await recordService.saveRecord(req.body);
       if (result.saved) return res.status(201).json({ saved: true });
       return res.status(200).json({ saved: false, reason: result.reason });
-    } catch (err: any) {
-      return res.status(400).json({ error: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return res.status(400).json({ error: err.message });
+      }
+      return res.status(400).json({ error: "Unknown error" });
     }
   };
 
@@ -27,8 +29,11 @@ export const getTopRecords =
     try {
       const records = await recordService.getTopRecords();
       return res.json(records);
-    } catch (err: any) {
-      return res.status(400).json({ error: err.message });
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        return res.status(400).json({ error: err.message });
+      }
+      return res.status(400).json({ error: "Unknown error" });
     }
   };
 
@@ -46,7 +51,7 @@ export const getBestUserRecord =
       const record = await recordService.getBestUserRecord(name);
       if (!record) return res.status(404).json({ message: "No record found" });
       res.json(record);
-    } catch (err) {
+    } catch {
       res.status(500).json({ error: "Failed to get user record" });
     }
   };

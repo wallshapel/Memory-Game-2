@@ -2,11 +2,12 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { ROOT_PATH } from "../utils/rootPath";
+import type { Request } from "express";
 
-// Directory for storing cover images 
+// Directory for storing cover images
 const coversDir = path.join(ROOT_PATH, "public", "uploads", "images", "covers");
 
-// Ensure directory exists 
+// Ensure directory exists
 fs.mkdirSync(coversDir, { recursive: true });
 
 const storage = multer.diskStorage({
@@ -21,14 +22,13 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (
-  _req: any,
+  _req: Request,
   file: Express.Multer.File,
   cb: multer.FileFilterCallback
 ) => {
   if (file.mimetype !== "image/png")
     cb(new Error("Only PNG images are allowed"));
-  else 
-    cb(null, true);
+  else cb(null, true);
 };
 
 const limits = {

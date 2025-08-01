@@ -1,5 +1,5 @@
 // src/models/UserSettings.ts
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IUserSettings } from "../interfaces/IUserSettings";
 
 const UserSettingsSchema = new Schema<IUserSettings>(

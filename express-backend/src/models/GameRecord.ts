@@ -1,5 +1,5 @@
 // src/models/GameRecord.ts
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { IGameRecord } from "../interfaces/IGameRecord";
 
 const GameRecordSchema = new Schema<IGameRecord>(
