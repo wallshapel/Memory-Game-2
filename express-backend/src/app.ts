@@ -8,6 +8,8 @@ import coverRoutes from "./routes/coverRoutes";
 import userSettingsRoutes from "./routes/userSettingsRoutes";
 import gameRecordRoutes from "./routes/recordRoutes";
 import { ROOT_PATH } from "./utils/rootPath";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
 
 dotenv.config();
 
@@ -34,5 +36,7 @@ console.log(ROOT_PATH);
 app.use("/api/covers", coverRoutes);
 app.use("/api/user-settings", userSettingsRoutes);
 app.use("/api/records", gameRecordRoutes);
+
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 export default app;

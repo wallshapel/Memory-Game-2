@@ -38,13 +38,10 @@ router.beforeEach((to, from, next) => {
   const goingToConfigRoot = to.path === "/config";
   const comingFromSound = from.path === "/config/sound";
 
-  if (leavingConfig && !enteringSound) {
-    audioStore.stopMusic();
-  }
+  if (leavingConfig && !enteringSound) audioStore.stopMusic();
 
-  if (goingToConfigRoot && !comingFromSound && !audioStore.bgMusicInstance) {
+  if (goingToConfigRoot && !comingFromSound && !audioStore.bgMusicInstance)
     audioStore.playMenuMusicLoop();
-  }
 
   next();
 });

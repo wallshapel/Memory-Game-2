@@ -1,3 +1,4 @@
+<!-- src/components/Scoreboard.vue -->
 <style scoped>
 .scoreboard {
     display: flex;
@@ -23,7 +24,9 @@
             ✅ {{ game.successCount }}
         </div>
         <div class="score fail">
-            ❌ {{ game.failCount }}
+            <span v-if="game.isCountdownMode">❤️</span>
+            <span v-else>❌</span>
+            {{ game.failCount }}
         </div>
     </div>
 </template>

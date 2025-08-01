@@ -1,3 +1,4 @@
+<!-- src/views/GameView.vue -->
 <style scoped>
 .settings-btn {
   position: absolute;
@@ -109,7 +110,7 @@ onMounted(async () => {
         playerStore.difficulty = parsedDiff as keyof typeof DIFFICULTY_LEVELS
     }
 
-    game.setCountdownMode(timeLimit.value, parsedMistakes)
+    game.setCountdownMode(timeLimit.value, parsedMistakes, timeLimit.value)
     chronometerRef.value?.startCountdown?.(timeLimit.value)
   }
 
@@ -136,5 +137,4 @@ onUnmounted(() => {
       playerStore.difficulty = parsedDiff as keyof typeof DIFFICULTY_LEVELS
   }
 })
-
 </script>

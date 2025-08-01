@@ -37,7 +37,6 @@ td {
                                 <th class="text-left">Difficulty</th>
                                 <th class="text-left">Cards</th>
                                 <th class="text-left">Time</th>
-                                <th class="text-left">Hits</th>
                                 <th class="text-left">Mistakes</th>
                                 <th class="text-left">Effectiveness</th>
                             </tr>
@@ -56,7 +55,6 @@ td {
                                 <td>{{ difficultyLabel(record.difficulty) }}</td>
                                 <td>{{ record.totalCards }}</td>
                                 <td>{{ formatTime(record.time) }}</td>
-                                <td>{{ record.hits }}</td>
                                 <td>{{ record.mistakes }}</td>
                                 <td>{{ record.effectiveness?.toFixed(2) ?? 'N/A' }}%</td>
                             </tr>
@@ -73,7 +71,7 @@ td {
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onBeforeUnmount, nextTick } from 'vue'
+import { onMounted, ref, onBeforeUnmount, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getBestRecordForUser, getTopRecords } from '../api/backend/records'
 import { usePlayerStore } from '../store/playerStore'
@@ -117,7 +115,8 @@ const startTimeAttack = (record: any) => {
             timeLimit: record.time.toString(),
             totalCards: record.totalCards.toString(),
             difficulty: record.difficulty.toString(),
-            mistakes: record.mistakes.toString()
+            mistakes: record.mistakes.toString(),
+            targetTime: record.time.toString()
         }
     })
 }
@@ -134,9 +133,7 @@ const checkAndPlayMusic = () => {
     }
 }
 
-onMounted(async () => {
-    if (route.path === '/records') checkAndPlayMusic()
-
+const loadRecords = async () => {
     try {
         records.value = await getTopRecords()
     } catch (err) {
@@ -146,7 +143,6 @@ onMounted(async () => {
     if (playerStore.name) {
         try {
             myBestRecord.value = await getBestRecordForUser(playerStore.name)
-
             const idx = records.value.findIndex(r => r._id === myBestRecord.value._id)
             selectableIndex.value = idx >= 0 ? idx : null
         } catch {
@@ -154,11 +150,24 @@ onMounted(async () => {
             selectableIndex.value = null
         }
     }
+}
 
+// Watch to reload every time you enter /records
+watch(
+    () => route.fullPath,
+    (newPath, oldPath) => {
+        // If you navigate to /records, reload
+        if (newPath === '/records')
+            loadRecords()
+    },
+    { immediate: true } // also executes when assembling
+)
+
+onMounted(() => {
+    if (route.path === '/records') checkAndPlayMusic()
     nextTick(() => {
         backButton.value?.$el?.focus()
     })
-
     window.addEventListener('keydown', handleKeydown)
 })
 

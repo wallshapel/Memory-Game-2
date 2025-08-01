@@ -1,3 +1,4 @@
+// src/store/gameStore.ts
 import { defineStore } from "pinia";
 import { ref, watch, computed } from "vue";
 import { usePlayerStore } from "./playerStore";
@@ -30,6 +31,9 @@ export const useGameStore = defineStore("game", () => {
 
   const successCount = ref(0);
   const failCount = ref(0);
+  const mistakesMade = ref(0);
+  const didBeatRecord = ref(false);
+  const targetRecordTime = ref<number | null>(null);
 
   const hasWon = ref(false);
   const hasLost = ref(false);
@@ -128,7 +132,7 @@ export const useGameStore = defineStore("game", () => {
             isCountdownMode.value && initialMistakesAllowed.value !== null
               ? initialMistakesAllowed.value
               : 0;
-              
+
           resetChronometer();
           startChronometer();
           cardsAreReady.value = true;
@@ -142,6 +146,7 @@ export const useGameStore = defineStore("game", () => {
     hasLost.value = false;
     successCount.value = 0;
     failCount.value = 0;
+    mistakesMade.value = 0;
     firstCard.value = null;
     secondCard.value = null;
     focusedIndex.value = 0;
@@ -183,6 +188,7 @@ export const useGameStore = defineStore("game", () => {
       checkWin();
     } else {
       audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
+      mistakesMade.value++;
       if (isCountdownMode.value) failCount.value--;
       else failCount.value++;
       setTimeout(() => {
@@ -212,7 +218,7 @@ export const useGameStore = defineStore("game", () => {
   // 🧠 Watch failCount and trigger Game Over after delay
   watch(failCount, async (newVal) => {
     const failCondition = isCountdownMode.value
-      ? newVal <= 0
+      ? newVal < 0
       : newVal >= maxFails.value;
 
     if (failCondition && !hasLost.value && !hasWon.value) {
@@ -256,6 +262,7 @@ export const useGameStore = defineStore("game", () => {
     secondCard.value = null;
     successCount.value = 0;
     failCount.value = 0;
+    mistakesMade.value = 0;
     hasWon.value = false;
     hasLost.value = false;
     showResultModal.value = false;
@@ -321,20 +328,38 @@ export const useGameStore = defineStore("game", () => {
   async function saveGameRecord() {
     const player = usePlayerStore();
     if (!player.name || player.name.trim().length === 0) return;
+
+    // Calculates the ACTUAL time used depending on the mode.
+    const timeUsed = isCountdownMode.value
+      ? countdownLimit.value - milliseconds.value // Used = total - remaining
+      : milliseconds.value;
+
+    didBeatRecord.value = false;
+    if (isCountdownMode.value && targetRecordTime.value !== null) {
+      if (timeUsed < targetRecordTime.value) {
+        didBeatRecord.value = true;
+      }
+    }
+
     await saveRecord({
       name: player.name,
       difficulty: player.difficulty,
       totalCards: player.totalCards,
       hits: successCount.value,
-      mistakes: failCount.value,
-      time: milliseconds.value,
+      mistakes: mistakesMade.value,
+      time: timeUsed,
     });
   }
 
-  function setCountdownMode(ms: number, allowedMistakes: number) {
+  function setCountdownMode(
+    ms: number,
+    allowedMistakes: number,
+    targetTime?: number
+  ) {
     isCountdownMode.value = true;
     countdownLimit.value = ms;
     initialMistakesAllowed.value = allowedMistakes;
+    targetRecordTime.value = typeof targetTime === "number" ? targetTime : null;
   }
 
   return {
@@ -351,6 +376,12 @@ export const useGameStore = defineStore("game", () => {
     formattedTime,
     focusedIndex,
     cardsAreReady,
+    isCountdownMode,
+    countdownLimit,
+    milliseconds,
+    mistakesMade,
+    didBeatRecord,
+    targetRecordTime,
     resetGame,
     initializeGame,
     handleCardClick,
@@ -362,5 +393,6 @@ export const useGameStore = defineStore("game", () => {
     stopChronometer,
     resetChronometer,
     setCountdownMode,
+    
   };
 });

@@ -18,6 +18,7 @@ export default defineConfig({
         "src/index.ts",
         "**/*.d.ts",
         "vitest.config.ts",
+        "eslint.config.mjs",
       ],
     },
   },

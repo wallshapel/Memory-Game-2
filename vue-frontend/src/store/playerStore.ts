@@ -1,3 +1,4 @@
+// src/store/playerStore.ts
 import { defineStore } from "pinia";
 import {
   DEFAULT_COVER_IMAGE,
