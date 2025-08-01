@@ -1,47 +1,33 @@
-import UserSettings from "../../models/UserSettings";
-import { ISaveUpdateUserSettings, IUserSettings, IUserSettingsUpdate } from "../../interfaces/IUserSettings";
+// src/services/impl/userSettingsServiceImp.ts
+import {
+  ISaveUpdateUserSettings,
+  IUserSettings,
+} from "../../interfaces/IUserSettings";
 import { UserSettingsService } from "../userSettingsService";
+import { UserSettingsRepository } from "../../repositories/UserSettingsRepository";
 
 export class UserSettingsServiceImp implements UserSettingsService {
-  async saveOrUpdateUserSettings(data: ISaveUpdateUserSettings): Promise<IUserSettings> {
-    // Upsert (update if exists, otherwise insert)
-    const update: IUserSettingsUpdate = {
-      difficulty: data.difficulty,
-      theme: data.theme,
-      totalCards: data.totalCards,
-      coverType: data.coverType,
-      controlMethod: data.controlMethod,
-      background: data.background,
-      musicVolume: data.musicVolume,
-      musicMuted: data.musicMuted,
-      effectsVolume: data.effectsVolume,
-      effectsMuted: data.effectsMuted,
-    };
+  private repository: UserSettingsRepository;
 
-    if (data.coverType === "uploaded")
-      update.coverFileName = data.coverFileName;
-    else update.coverFileName = undefined;
+  constructor(repository: UserSettingsRepository) {
+    this.repository = repository;
+  }
 
-    // Find by name (unique for user), upsert
-    const settings = await UserSettings.findOneAndUpdate(
-      { name: data.name },
-      update,
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    ).exec();
-
-    return settings as IUserSettings;
+  async saveOrUpdateUserSettings(
+    data: ISaveUpdateUserSettings
+  ): Promise<IUserSettings> {
+    return this.repository.saveOrUpdateUserSettings(data);
   }
 
   async getLatestUserSettings(): Promise<IUserSettings | null> {
-    return UserSettings.findOne({}).sort({ createdAt: -1 });
+    return this.repository.getLatestUserSettings();
   }
 
   async userExists(name: string): Promise<boolean> {
-    const result = await UserSettings.exists({ name });
-    return result !== null;
+    return this.repository.userExists(name);
   }
 
   async getUserSettingsByName(name: string): Promise<IUserSettings | null> {
-    return UserSettings.findOne({ name });
+    return this.repository.getUserSettingsByName(name);
   }
 }

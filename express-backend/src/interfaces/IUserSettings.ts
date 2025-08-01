@@ -1,3 +1,4 @@
+// src/interfaces/IUserSettings.ts
 export interface IUserSettings extends Document {
   name: string;
   difficulty: number;
