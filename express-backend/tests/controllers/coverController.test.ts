@@ -1,88 +1,73 @@
+// tests/controllers/coverController.test.ts
 import { uploadCover } from "../../src/controllers/coverController";
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 
-// Simple mocks for req and res
-const getMockReqRes = (overrides = {}) => {
-  const req: any = {
-    body: {},
-    file: undefined,
-    ...overrides,
+describe("uploadCover controller", () => {
+  const mockCoverService = {
+    processCoverUpload: vi.fn(),
   };
 
-  let statusCode = 0;
-  let jsonPayload: any = null;
-
-  const res: any = {
-    status: vi.fn((code) => {
-      statusCode = code;
-      return res;
-    }),
-    json: vi.fn((payload) => {
-      jsonPayload = payload;
-      return res;
-    }),
-    // In case you want to check the result
-    _getStatus: () => statusCode,
-    _getJson: () => jsonPayload,
+  const getMockRes = () => {
+    const res: any = {};
+    res.status = vi.fn().mockReturnValue(res);
+    res.json = vi.fn().mockReturnValue(res);
+    return res;
   };
 
-  return { req, res };
-};
+  it("should respond with 400 if no file is uploaded", async () => {
+    const req: any = { body: { username: "testuser" }, file: undefined };
+    const res = getMockRes();
 
-// Patch: Hack processCoverUpload method during unit testing
-const mockCoverService = {
-  processCoverUpload: vi.fn(),
-};
-
-vi.mock("../../src/services/impl/coverServiceImp", () => {
-  return {
-    CoverServiceImp: class {
-      async processCoverUpload(username: string, filename: string) {
-        // Call the mock
-        return mockCoverService.processCoverUpload(username, filename);
-      }
-    }
-  }
-});
-
-describe("uploadCover (controller) - unit tests", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("should return 400 if no file is uploaded", async () => {
-    const { req, res } = getMockReqRes({ body: { username: "test" }, file: undefined });
-    await uploadCover(req, res);
+    await uploadCover(mockCoverService as any)(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: "No file uploaded." });
   });
 
-  it("should return 400 if no username is provided", async () => {
-    const { req, res } = getMockReqRes({ file: { filename: "file.png" }, body: {} });
-    await uploadCover(req, res);
+  it("should respond with 400 if no username is provided", async () => {
+    const req: any = { body: { }, file: { filename: "file.png" } };
+    const res = getMockRes();
+
+    await uploadCover(mockCoverService as any)(req, res);
 
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({ error: "Username is required." });
   });
 
-  it("should return 201 and filename on success", async () => {
-    // Configure the mock to simulate success
-    mockCoverService.processCoverUpload.mockResolvedValueOnce("cover123.png");
-    const { req, res } = getMockReqRes({ file: { filename: "file.png" }, body: { username: "test" } });
-    await uploadCover(req, res);
+  it("should call processCoverUpload and respond with filename", async () => {
+    const req: any = { body: { username: "testuser" }, file: { filename: "file.png" } };
+    const res = getMockRes();
 
-    expect(mockCoverService.processCoverUpload).toHaveBeenCalledWith("test", "file.png");
+    mockCoverService.processCoverUpload.mockResolvedValueOnce("file.png");
+
+    await uploadCover(mockCoverService as any)(req, res);
+
+    expect(mockCoverService.processCoverUpload).toHaveBeenCalledWith("testuser", "file.png");
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith({ filename: "cover123.png" });
+    expect(res.json).toHaveBeenCalledWith({ filename: "file.png" });
   });
 
-  it("should handle errors thrown by the service", async () => {
-    mockCoverService.processCoverUpload.mockRejectedValueOnce(new Error("Service error"));
-    const { req, res } = getMockReqRes({ file: { filename: "file.png" }, body: { username: "test" } });
-    await uploadCover(req, res);
+  it("should handle service errors and respond with 500", async () => {
+    const req: any = { body: { username: "testuser" }, file: { filename: "file.png" } };
+    const res = getMockRes();
+
+    mockCoverService.processCoverUpload.mockRejectedValueOnce(new Error("Something went wrong"));
+
+    await uploadCover(mockCoverService as any)(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith({ error: "Service error" });
+    expect(res.json).toHaveBeenCalledWith({ error: "Something went wrong" });
+  });
+
+  it("should handle unknown errors and respond with 500", async () => {
+    const req: any = { body: { username: "testuser" }, file: { filename: "file.png" } };
+    const res = getMockRes();
+
+    mockCoverService.processCoverUpload.mockRejectedValueOnce("UnknownError");
+
+    await uploadCover(mockCoverService as any)(req, res);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ error: "Unknown server error" });
   });
 });

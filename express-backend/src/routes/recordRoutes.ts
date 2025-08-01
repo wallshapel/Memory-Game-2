@@ -5,11 +5,14 @@ import {
   getTopRecords,
   getBestUserRecord,
 } from "../controllers/recordController";
+import { recordServiceProvider } from "../providers/recordServiceProvider";
 
 const router = Router();
 
-router.post("/", saveRecord); // POST /api/records
-router.get("/", getTopRecords); // GET /api/records
-router.get("/best/:name", getBestUserRecord); // GET /api/records/best/:name
+const recordService = recordServiceProvider();
+
+router.post("/", saveRecord(recordService)); // POST /api/records
+router.get("/", getTopRecords(recordService)); // GET /api/records
+router.get("/best/:name", getBestUserRecord(recordService)); // GET /api/records/best/:name
 
 export default router;

@@ -1,14 +1,19 @@
 // src/services/impl/recordServiceImp.ts
 import { RecordService } from "../recordService";
-import GameRecord from "../../models/GameRecord";
+import { RecordRepository } from "../../repositories/RecordRepository";
 import { IGameRecord, ISaveRecord } from "../../interfaces/IGameRecord";
 import { compareRecords } from "../../utils/compareRecords";
 
 export class RecordServiceImp implements RecordService {
+  private repository: RecordRepository;
+
+  constructor(repository: RecordRepository) {
+    this.repository = repository;
+  }
+
   async saveRecord(
     record: ISaveRecord
   ): Promise<{ saved: boolean; reason?: string }> {
-    // Calculate effectiveness
     const attempts = record.hits + record.mistakes;
     const effectiveness =
       attempts === 0
@@ -16,21 +21,13 @@ export class RecordServiceImp implements RecordService {
         : parseFloat(((record.hits / attempts) * 100).toFixed(2));
     const newRecord = { ...record, effectiveness };
 
-    // Get current top 20 records with the right sort order!
-    const topRecords = await GameRecord.find({})
-      .sort({
-        difficulty: -1,
-        totalCards: -1,
-        effectiveness: -1,
-        time: 1,
-      })
-      .limit(20)
-      .exec();
+    // Get current top 20 records sorted
+    const topRecords = await this.repository.getTopRecords(20);
 
     let qualifies = false;
-    if (topRecords.length < 20) {
+    if (topRecords.length < 20)
       qualifies = true;
-    } else {
+    else {
       const last = topRecords[topRecords.length - 1];
       const cmp = compareRecords(
         {
@@ -49,39 +46,23 @@ export class RecordServiceImp implements RecordService {
       qualifies = cmp < 0;
     }
 
-    if (!qualifies) {
+    if (!qualifies)
       return { saved: false, reason: "Not in top 20" };
-    }
 
     if (topRecords.length === 20) {
       const worst = topRecords[topRecords.length - 1];
-      await GameRecord.findByIdAndDelete(worst._id);
+      await this.repository.deleteRecordById(worst._id.toString());
     }
 
-    await GameRecord.create(newRecord);
+    await this.repository.createRecord(newRecord);
     return { saved: true };
   }
 
   async getTopRecords(): Promise<IGameRecord[]> {
-    return (await GameRecord.find({})
-      .sort({
-        difficulty: -1,
-        totalCards: -1,
-        effectiveness: -1,
-        time: 1,
-      })
-      .limit(20)
-      .lean()) as IGameRecord[];
+    return this.repository.getTopRecords(20);
   }
 
   async getBestUserRecord(name: string): Promise<IGameRecord | null> {
-    return (await GameRecord.findOne({ name })
-      .sort({
-        totalCards: -1,
-        time: 1,
-        difficulty: -1,
-        effectiveness: -1,
-      })
-      .lean()) as IGameRecord | null;
+    return this.repository.getBestUserRecord(name);
   }
 }
