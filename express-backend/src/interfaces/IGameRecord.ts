@@ -1,4 +1,8 @@
+// src/interfaces/IGameRecord.ts
+import { Types } from "mongoose";
+
 export interface IGameRecord extends Document {
+  _id: Types.ObjectId;
   name: string;
   difficulty: number;
   totalCards: number;

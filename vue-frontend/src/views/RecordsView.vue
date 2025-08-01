@@ -1,3 +1,4 @@
+<!-- src/views/RecordsView.vue -->
 <style scoped>
 th,
 td {

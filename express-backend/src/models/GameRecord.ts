@@ -1,3 +1,4 @@
+// src/models/GameRecord.ts
 import mongoose, { Schema, Document } from "mongoose";
 import { IGameRecord } from "../interfaces/IGameRecord";
 

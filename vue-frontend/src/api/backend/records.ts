@@ -1,15 +1,9 @@
+// src/api/backend/records.ts
 import api from "./apiConfig";
 import type { IGameRecord, ISaveRecord } from "../../interfaces/IGameRecord";
 
 export const getTopRecords = async () => {
   const { data } = await api.get<IGameRecord[]>("/records");
-  return data;
-};
-
-export const trySaveRecord = async (
-  record: Omit<IGameRecord, "effectiveness" | "createdAt">
-) => {
-  const { data } = await api.post("/records", record);
   return data;
 };
 

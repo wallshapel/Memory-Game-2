@@ -1,29 +1,42 @@
 // src/controllers/recordController.ts
 import { Request, Response } from "express";
-import { RecordServiceImp } from "../services/impl/recordServiceImp";
 import { RecordService } from "../services/recordService";
+import { RecordServiceImp } from "../services/impl/recordServiceImp";
 
 const recordService: RecordService = new RecordServiceImp();
 
-export const getTopRecords = async (req: Request, res: Response) => {
-  try {
-    const records = await recordService.getTopRecords();
-    res.json(records);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch records" });
-  }
-};
-
+/**
+ * POST /api/records
+ * Tries to save a new game record in the top 20.
+ * Responds with { saved: true } if saved, or { saved: false, reason } if not.
+ */
 export const saveRecord = async (req: Request, res: Response) => {
   try {
-    const data = req.body;
-    const saved = await recordService.save(data);
-    res.status(201).json(saved);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to save record" });
+    const result = await recordService.saveRecord(req.body);
+    if (result.saved) return res.status(201).json({ saved: true });
+    return res.status(200).json({ saved: false, reason: result.reason });
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message });
   }
 };
 
+/**
+ * GET /api/records
+ * Returns the top 20 records globally, sorted according to your criteria.
+ */
+export const getTopRecords = async (_req: Request, res: Response) => {
+  try {
+    const records = await recordService.getTopRecords();
+    return res.json(records);
+  } catch (err: any) {
+    return res.status(400).json({ error: err.message });
+  }
+};
+
+/**
+ * GET /api/records/best/:name
+ * Returns the best record for a given user.
+ */
 export const getBestUserRecord = async (req: Request, res: Response) => {
   try {
     const { name } = req.params;

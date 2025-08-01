@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import path from "path";
 import coverRoutes from "./routes/coverRoutes";
 import userSettingsRoutes from "./routes/userSettingsRoutes";
-import gameRecordRoutes from "./routes/gameRecordRoutes";
+import gameRecordRoutes from "./routes/recordRoutes";
 import { ROOT_PATH } from "./utils/rootPath";
 
 dotenv.config();

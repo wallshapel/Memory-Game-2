@@ -1,3 +1,4 @@
+// src/controllers/userSettingsController.ts
 import { Request, Response } from "express";
 import { UserSettingsService } from "../services/userSettingsService";
 import { UserSettingsServiceImp } from "../services/impl/userSettingsServiceImp";

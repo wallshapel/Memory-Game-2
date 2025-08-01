@@ -1,3 +1,4 @@
+// src/api/backend/cover.ts
 import api from "./apiConfig";
 
 export const uploadCover = async (file: File, username: string) => {

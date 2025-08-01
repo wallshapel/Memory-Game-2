@@ -1,3 +1,4 @@
+// src/api/backend/userSettings.ts
 import type { IGameRecord } from "../../interfaces/IGameRecord";
 import type { IUserSettings } from "../../interfaces/IUserSettings";
 import api from "./apiConfig";
