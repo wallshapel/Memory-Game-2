@@ -4,6 +4,9 @@ node_modules/
 # Build output
 dist/
 
+# Covergae
+coverage/
+
 # Environment variables
 .env
 
