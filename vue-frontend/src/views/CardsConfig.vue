@@ -1,17 +1,18 @@
+<!-- src/views/CardsConfig.vue -->
 <template>
     <v-app>
         <v-main>
             <v-container class="d-flex flex-column align-center justify-center" style="min-height: 100vh;" fluid>
                 <h1 class="text-h5 mb-6">Card Back Cover</h1>
 
-                <v-card class="pa-6" width="100%" max-width="500" rounded="xl">
-                    <!-- Cover Options -->
+                <v-card class="pa-6 text-center" width="100%" max-width="500" rounded="xl">
+                    <!-- Cover selection grid -->
                     <div class="mb-4">
                         <label class="text-subtitle-1 font-weight-medium mb-2 d-block text-center">
                             Select Cover
                         </label>
                         <v-row dense>
-                            <!-- Default -->
+                            <!-- Default cover option -->
                             <v-col cols="6" class="text-center mx-auto">
                                 <v-card class="pa-2" rounded="lg" :elevation="store.coverType === 'default' ? 10 : 2"
                                     :class="store.coverType === 'default' ? 'border border-primary bg-grey-lighten-4' : ''"
@@ -20,8 +21,7 @@
                                     <span class="text-caption">Default</span>
                                 </v-card>
                             </v-col>
-
-                            <!-- Uploaded -->
+                            <!-- Uploaded cover option (if available) -->
                             <v-col cols="6" v-if="uploadedUrl" class="text-center">
                                 <v-card class="pa-2" rounded="lg" :elevation="store.coverType === 'uploaded' ? 10 : 2"
                                     :class="store.coverType === 'uploaded' ? 'border border-primary bg-grey-lighten-4' : ''"
@@ -33,18 +33,18 @@
                         </v-row>
                     </div>
 
-                    <!-- Upload Control -->
+                    <!-- File input for uploading a cover -->
                     <v-file-input ref="fileInput" accept="image/png" label="Upload Custom Cover (.png, max 5MB)"
                         @update:modelValue="handleFile" prepend-icon="mdi-upload" outlined dense hide-details
                         class="mb-4" />
 
-                    <!-- Back Button -->
+                    <!-- Back button to config menu -->
                     <v-btn ref="backBtn" class="mt-6" color="secondary" @click="handleBack" block>
                         ⬅ Back to Config
                     </v-btn>
                 </v-card>
 
-                <!-- Error Modal -->
+                <!-- Modal for error feedback -->
                 <AlertModal v-model="showError" :title="store.name ? 'Invalid File' : 'User Required'"
                     :message="store.name ? 'Only .png files under 5MB are allowed.' : 'Please set your user name before uploading a cover.'"
                     actionLabel="OK" @confirm="showError = false" />
@@ -67,17 +67,30 @@ const router = useRouter()
 const store = usePlayerStore()
 const audioStore = useAudioStore()
 
+// Path for default card back cover image
 const defaultImage = `${BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${DEFAULT_COVER_IMAGE}`
-const showError = ref(false)
 
+const showError = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const backBtn = ref<HTMLButtonElement | null>(null)
 
-onMounted(() => {
-    // Focus the upload input on mount
-    fileInput.value?.focus()
+/**
+ * Returns the image URL for the uploaded card cover.
+ * - Returns object URL if user just uploaded a file.
+ * - Returns backend URL if there's a stored filename.
+ * - Returns null if none is available.
+ */
+const uploadedUrl = computed(() => {
+    if (store.coverType === "default") return null
+    if (store.coverFile) return URL.createObjectURL(store.coverFile)
+    if (store.coverType === "uploaded" && store.coverFileName)
+        return `${FULL_BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${store.coverFileName}`
+    return null
+})
 
-    // Listen for Escape key
+// Focus the file input on mount and listen for ESC key
+onMounted(() => {
+    fileInput.value?.focus()
     window.addEventListener('keydown', handleEscape)
 })
 
@@ -85,66 +98,63 @@ onBeforeUnmount(() => {
     window.removeEventListener('keydown', handleEscape)
 })
 
-// ⎋ ESC key = back action
+/**
+ * Handles ESC key press to go back to config.
+ */
 const handleEscape = (e: KeyboardEvent) => {
     if (e.key === 'Escape') handleBack()
 }
 
-// Back button logic with sound
+/**
+ * Navigates back to the config menu with a confirmation sound.
+ */
 const handleBack = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
     router.push('/config')
 }
 
-const uploadedUrl = computed(() => {
-    if (store.coverType === "default") return null;
-
-    if (store.coverFile)
-        return URL.createObjectURL(store.coverFile);
-
-    if (store.coverType === "uploaded" && store.coverFileName)
-        return `${FULL_BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${store.coverFileName}`;
-
-    return null;
-});
-
+/**
+ * Handles selecting the default cover option and saves to backend.
+ */
 const selectDefaultCover = async () => {
-    store.setCoverType("default");
-    store.setCoverFile(null);
-    store.setCoverFileName(undefined);
-
+    store.setCoverType("default")
+    store.setCoverFile(null)
+    store.setCoverFileName(undefined)
     if (store.name && store.name.trim().length > 0)
-        await store.saveToBackend();
-};
+        await store.saveToBackend()
+}
 
-// Handle file upload
+/**
+ * Handles file input selection and upload logic.
+ * Only accepts PNG under 5MB and requires a user name.
+ * Uploads file to backend and updates the store.
+ */
 const handleFile = async (files: File[]) => {
-    const selected = files?.[0];
-    if (!selected) return;
+    const selected = files?.[0]
+    if (!selected) return
 
     if (!store.name || store.name.trim().length === 0) {
-        showError.value = true;
-        return;
+        showError.value = true
+        return
     }
 
-    const isPNG = selected.type === 'image/png';
-    const isValidSize = selected.size <= 5 * 1024 * 1024;
+    const isPNG = selected.type === 'image/png'
+    const isValidSize = selected.size <= 5 * 1024 * 1024
 
     if (!isPNG || !isValidSize) {
-        showError.value = true;
-        return;
+        showError.value = true
+        return
     }
 
-    // Upload the file to backend and get the filename, passing username
     try {
-        const { filename } = await uploadCover(selected, store.name || "");
-        store.setCoverFile(selected);
-        store.setCoverFileName(filename);
-        store.setCoverType('uploaded');
+        const { filename } = await uploadCover(selected, store.name || "")
+        store.setCoverFile(selected)
+        store.setCoverFileName(filename)
+        store.setCoverType('uploaded')
         if (store.name && store.name.trim().length > 0)
-            await store.saveToBackend();
+            await store.saveToBackend()
     } catch (e) {
-        showError.value = true;
+        showError.value = true
     }
 }
 </script>
