@@ -1,3 +1,4 @@
+<!-- src/components/Card.vue -->
 <style scoped>
 .card-inner {
     width: 100%;
@@ -55,22 +56,33 @@
 .card:not(.flipped).focused .card-inner {
     transform: scale(1.08);
 }
+
+.noselect,
+.card,
+.card-inner {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+}
 </style>
 
 <template>
-    <div class="card" :class="{ flipped: card.flipped, focused: isFocused }" @mouseenter="handleHover"
+    <div class="card noselect" :class="{ flipped: card.flipped, focused: isFocused }" @mouseenter="handleHover"
         @click="handleClick"
-        :style="{ width: props.width + 'px', height: props.height + 'px', perspective: '600px', margin: '1px' }">
+        :style="{ width: props.width + 'px', height: props.height + 'px', perspective: '600px', margin: '1px' }"
+        @mousedown.prevent @selectstart.prevent>
         <div class="card-inner">
             <div class="card-front">
-                <img :src="coverImage" alt="Cover" />
+                <img :src="coverImage" alt="Cover" draggable="false" />
             </div>
             <div class="card-back">
-                <img :src="card.image" alt="Animal" />
+                <img :src="card.image" alt="Animal" draggable="false" />
             </div>
         </div>
     </div>
 </template>
+
 
 <script setup lang="ts">
 import { computed, watch } from 'vue'
@@ -118,8 +130,8 @@ watch(() => props.isFocused, (focused) => {
 })
 
 const coverImage = computed(() => {
-  if (store.coverType === 'uploaded' && store.coverFileName)
-    return `${FULL_BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${store.coverFileName}`;
-  return `${BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${DEFAULT_COVER_IMAGE}`;
+    if (store.coverType === 'uploaded' && store.coverFileName)
+        return `${FULL_BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${store.coverFileName}`;
+    return `${BASE_PATH_IMAGE_RESOURCES.COVERS_PATH}${DEFAULT_COVER_IMAGE}`;
 });
 </script>

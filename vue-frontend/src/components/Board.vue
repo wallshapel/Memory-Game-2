@@ -1,12 +1,20 @@
+<!-- src/components/Board.vue -->
 <style scoped>
+.noselect {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+}
+
 .disable-mouse {
     pointer-events: none;
 }
 </style>
 
 <template>
-    <div v-if="game.cards.length > 0" :style="gridStyle"
-        :class="{ 'disable-mouse': store.controlMethod === 'keyboard' }">
+    <div v-if="game.cards.length > 0" :style="gridStyle" class="noselect"
+        :class="{ 'disable-mouse': store.controlMethod === 'keyboard' }" @mousedown.prevent @selectstart.prevent>
         <Card v-for="(card, index) in game.cards" :key="card.id" :card="card" :width="cardWidth" :height="cardHeight"
             :isFocused="store.controlMethod === 'keyboard' && game.cardsAreReady && index === game.focusedIndex" />
     </div>
@@ -138,7 +146,7 @@ onMounted(() => {
         async (ready) => {
             if (ready && store.controlMethod === 'keyboard') {
                 await nextTick()
-                game.focusedIndex = 0 // Allows focus to be initiated on the first card (even if paired).
+                game.focusedIndex = 0
             } else
                 game.focusedIndex = -1
         }
