@@ -16,9 +16,17 @@ import { shuffleArray } from "../utils/shuffleArray";
 import { themeFetchers } from "../api/themeFetchers";
 import { saveRecord } from "../api/backend/records";
 
+/**
+ * Pinia store that manages all game state for the memory game, including
+ * cards, timers, scoring, audio cues, and modes (normal, countdown).
+ * Provides all core logic for initializing, running, and resetting a game session.
+ */
 export const useGameStore = defineStore("game", () => {
+  // ==== Stores ====
   const playerStore = usePlayerStore();
   const audioStore = useAudioStore();
+
+  // ==== Game state (reactive) ====
   const showSettingsModal = ref(false);
   const isCountdownMode = ref(false);
   const countdownLimit = ref(0);
@@ -44,12 +52,15 @@ export const useGameStore = defineStore("game", () => {
 
   const initialMistakesAllowed = ref<number | null>(null);
 
-  // 🕒 Timeout references to prevent orphan timers
+  // Timeout handles (internal, non-reactive)
   let presentationTimeout: number | null = null;
   let memorizationTimeout: number | null = null;
   let chronometerStartTimeout: number | null = null;
   let resultModalTimeout: number | null = null;
 
+  /**
+   * Computes the maximum number of failed attempts allowed for the current difficulty.
+   */
   const maxFails = computed(() => {
     const pairs = playerStore.totalCards / 2;
     switch (playerStore.difficulty) {
@@ -64,6 +75,11 @@ export const useGameStore = defineStore("game", () => {
     }
   });
 
+  /**
+   * Initializes a new game session: shuffles cards, resets timers and state,
+   * and starts background music for the current mode.
+   * Also handles the memorization and presentation timeouts before play starts.
+   */
   async function initializeGame() {
     audioStore.stopAllAudio();
     audioStore.playGameMusicLoop(isCountdownMode.value);
@@ -97,7 +113,6 @@ export const useGameStore = defineStore("game", () => {
 
     const duplicated: ICardData[] = rawData.flatMap((entry) => {
       if (!entry.name || !entry.imageUrl) return [];
-
       return [0, 1].map((suffix) => ({
         id: `${entry.name}-${suffix}`,
         name: entry.name,
@@ -141,6 +156,10 @@ export const useGameStore = defineStore("game", () => {
     }, CARD_DISPLAY_SETTINGS.CARD_PRESENTATION_DELAY_MS);
   }
 
+  /**
+   * Resets the entire game session, including state, scores and timers.
+   * Calls `initializeGame()` after reset.
+   */
   function resetGame() {
     hasWon.value = false;
     hasLost.value = false;
@@ -159,6 +178,11 @@ export const useGameStore = defineStore("game", () => {
     initializeGame();
   }
 
+  /**
+   * Handles a card click by the user, updating selection and triggering match logic.
+   * Ignores clicks when game is won/lost or invalid selection.
+   * @param card - The card that was clicked.
+   */
   function handleCardClick(card: ICardData) {
     if (hasWon.value || hasLost.value) return;
     if (card.flipped || card.blocked || secondCard.value) return;
@@ -172,6 +196,10 @@ export const useGameStore = defineStore("game", () => {
     }
   }
 
+  /**
+   * Checks if the two selected cards match.
+   * Updates score, plays effect, handles win/loss logic and unflips on mismatch.
+   */
   function checkMatch() {
     if (!firstCard.value || !secondCard.value) return;
 
@@ -199,6 +227,9 @@ export const useGameStore = defineStore("game", () => {
     }
   }
 
+  /**
+   * Checks for win condition. Triggers victory music, stops chronometer, and shows result modal if won.
+   */
   async function checkWin() {
     if (hasWon.value) return;
 
@@ -215,7 +246,7 @@ export const useGameStore = defineStore("game", () => {
     }
   }
 
-  // 🧠 Watch failCount and trigger Game Over after delay
+  // Watch failCount and trigger Game Over after delay if reached.
   watch(failCount, async (newVal) => {
     const failCondition = isCountdownMode.value
       ? newVal < 0
@@ -233,13 +264,20 @@ export const useGameStore = defineStore("game", () => {
     }
   });
 
+  /**
+   * Clears the currently selected cards (after match/mismatch).
+   */
   function resetSelection() {
     firstCard.value = null;
     secondCard.value = null;
   }
 
+  /**
+   * Completely resets all game state and timers, cancels timeouts, and returns store to initial state.
+   * Does NOT start a new game session.
+   */
   function clearGame() {
-    // ⛔ Cancel all pending timeouts
+    // Cancel all pending timeouts
     if (resultModalTimeout) {
       clearTimeout(resultModalTimeout);
       resultModalTimeout = null;
@@ -279,6 +317,9 @@ export const useGameStore = defineStore("game", () => {
     countdownLimit.value = 0;
   }
 
+  /**
+   * Returns the formatted elapsed/remaining time in mm:ss:ms for UI display.
+   */
   const formattedTime = computed(() => {
     const ms = milliseconds.value % 1000;
     const totalSeconds = Math.floor(milliseconds.value / 1000);
@@ -288,6 +329,10 @@ export const useGameStore = defineStore("game", () => {
     return `${minutes}:${seconds}:${millis}`;
   });
 
+  /**
+   * Starts the game chronometer (either counting up or down).
+   * Handles timeouts and triggers game over if timer runs out.
+   */
   function startChronometer() {
     if (interval !== null) return;
     interval = setInterval(() => {
@@ -302,6 +347,10 @@ export const useGameStore = defineStore("game", () => {
     }, 10);
   }
 
+  /**
+   * Handles timeout event when countdown timer reaches zero.
+   * Sets game as lost, plays sound and shows result modal.
+   */
   function handleTimeOut() {
     if (!hasWon.value && !hasLost.value) {
       hasLost.value = true;
@@ -313,6 +362,9 @@ export const useGameStore = defineStore("game", () => {
     }
   }
 
+  /**
+   * Stops the chronometer/timer for the current session.
+   */
   function stopChronometer() {
     if (interval !== null) {
       clearInterval(interval);
@@ -320,11 +372,18 @@ export const useGameStore = defineStore("game", () => {
     }
   }
 
+  /**
+   * Resets the chronometer to start value (0 or countdownLimit).
+   */
   function resetChronometer() {
     stopChronometer();
     milliseconds.value = isCountdownMode.value ? countdownLimit.value : 0;
   }
 
+  /**
+   * Persists a new game record to the backend, using current scores/times.
+   * Also checks if a record was beaten (in countdown mode).
+   */
   async function saveGameRecord() {
     const player = usePlayerStore();
     if (!player.name || player.name.trim().length === 0) return;
@@ -351,6 +410,12 @@ export const useGameStore = defineStore("game", () => {
     });
   }
 
+  /**
+   * Sets the countdown/time-attack mode parameters for the session.
+   * @param ms - Time limit in milliseconds.
+   * @param allowedMistakes - Initial allowed mistakes for countdown mode.
+   * @param targetTime - Optional target record time.
+   */
   function setCountdownMode(
     ms: number,
     allowedMistakes: number,
@@ -362,6 +427,7 @@ export const useGameStore = defineStore("game", () => {
     targetRecordTime.value = typeof targetTime === "number" ? targetTime : null;
   }
 
+  // ==== Exposed state and actions ====
   return {
     cards,
     firstCard,
@@ -393,6 +459,5 @@ export const useGameStore = defineStore("game", () => {
     stopChronometer,
     resetChronometer,
     setCountdownMode,
-    
   };
 });
