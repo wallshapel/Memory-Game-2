@@ -129,19 +129,19 @@ export const useAudioStore = defineStore("audio", {
     },
 
     // 🎮 Game Music
-    playGameMusicLoop() {
+    playGameMusicLoop(isCountdownMode = false) {
       this.stopAllAudio();
 
-      const audio = this.playAudio(
-        OTHER_MUSICAL_BACKGROUNDS.gameplay,
-        "music",
-        {
-          loop: true,
-          volume: this.effectsMuted ? 0 : this.effectsVolume / 100,
-        }
-      );
+      const file = isCountdownMode
+        ? OTHER_MUSICAL_BACKGROUNDS.timetrial
+        : OTHER_MUSICAL_BACKGROUNDS.gameplay;
 
-      this.gameMusicInstance = audio;
+      const audio = this.playAudio(file, "music", {
+        loop: true,
+        volume: this.musicVolume / 100,
+      });
+
+      this.bgMusicInstance = audio;
     },
 
     // ⚙️ Menu Music

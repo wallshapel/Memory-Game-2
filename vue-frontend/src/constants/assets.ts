@@ -111,6 +111,7 @@ export const BACKGROUND_MUSIC = {
 // 🎵 Other musical backgrounds
 export const OTHER_MUSICAL_BACKGROUNDS = {
   gameplay: "feuxfollets",
+  timetrial: "la_campanella",
   settings: "liebestraum",
   records: "aquarium",
 } as const;

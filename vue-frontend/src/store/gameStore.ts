@@ -66,7 +66,7 @@ export const useGameStore = defineStore("game", () => {
 
   async function initializeGame() {
     audioStore.stopAllAudio();
-    audioStore.playGameMusicLoop();
+    audioStore.playGameMusicLoop(isCountdownMode.value);
 
     cards.value = [];
     cardsAreReady.value = false;
