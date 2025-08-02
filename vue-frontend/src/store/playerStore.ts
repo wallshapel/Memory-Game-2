@@ -12,7 +12,6 @@ import {
   saveUserSettings,
 } from "../api/backend/userSettings";
 import { useAudioStore } from "./audioStore";
-import type { BackgroundMusicIndex } from "./audioStore";
 
 export const usePlayerStore = defineStore("player", {
   state: () => ({
@@ -99,11 +98,13 @@ export const usePlayerStore = defineStore("player", {
       this.backgroundMusic = settings.background;
 
       const audio = useAudioStore();
-      audio.musicTrack = settings.background as BackgroundMusicIndex;
-      audio.musicVolume = settings.musicVolume ?? 50;
-      audio.musicMuted = settings.musicMuted ?? false;
-      audio.effectsVolume = settings.effectsVolume ?? 70;
-      audio.effectsMuted = settings.effectsMuted ?? false;
+      audio.applyAudioSettings({
+        background: settings.background,
+        musicVolume: settings.musicVolume,
+        musicMuted: settings.musicMuted,
+        effectsVolume: settings.effectsVolume,
+        effectsMuted: settings.effectsMuted,
+      });
     },
 
     async resetToDefaults() {
@@ -118,11 +119,13 @@ export const usePlayerStore = defineStore("player", {
       this.backgroundMusic = 0;
 
       const audio = useAudioStore();
-      audio.musicTrack = 0;
-      audio.musicVolume = 50;
-      audio.musicMuted = false;
-      audio.effectsVolume = 70;
-      audio.effectsMuted = false;
+      audio.applyAudioSettings({
+        background: 0,
+        musicVolume: 50,
+        musicMuted: false,
+        effectsVolume: 70,
+        effectsMuted: false,
+      });
     },
 
     async saveToBackend() {
@@ -130,6 +133,14 @@ export const usePlayerStore = defineStore("player", {
         throw new Error("User name is required");
 
       const audio = useAudioStore();
+      // Sync audioStore with playerStore settings before saving
+      audio.applyAudioSettings({
+        background: this.backgroundMusic,
+        musicVolume: audio.musicVolume,
+        musicMuted: audio.musicMuted,
+        effectsVolume: audio.effectsVolume,
+        effectsMuted: audio.effectsMuted,
+      });
 
       const settings: IUserSettings = {
         name: this.name,

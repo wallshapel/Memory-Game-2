@@ -73,6 +73,30 @@ export const useAudioStore = defineStore("audio", {
       this.effectsVolume = volume;
     },
 
+    applyAudioSettings(settings: {
+      musicVolume?: number;
+      musicMuted?: boolean;
+      effectsVolume?: number;
+      effectsMuted?: boolean;
+      background?: number;
+    }) {
+      if (typeof settings.background === "number")
+        this.musicTrack = settings.background as BackgroundMusicIndex;
+      if (typeof settings.musicVolume === "number") {
+        this.musicVolume = settings.musicVolume;
+        if (this.bgMusicInstance)
+          this.bgMusicInstance.volume = this.musicVolume / 100;
+      }
+      if (typeof settings.musicMuted === "boolean") {
+        this.musicMuted = settings.musicMuted;
+        if (this.bgMusicInstance) this.bgMusicInstance.muted = this.musicMuted;
+      }
+      if (typeof settings.effectsVolume === "number")
+        this.effectsVolume = settings.effectsVolume;
+      if (typeof settings.effectsMuted === "boolean")
+        this.effectsMuted = settings.effectsMuted;
+    },
+
     // 🔁 Music & Effects: Core Player
     playAudio(
       fileName: string,
