@@ -1,3 +1,4 @@
+<!-- src/views/GamePlayConfig.vue -->
 <template>
     <v-app>
         <v-main>
@@ -69,22 +70,21 @@ const router = useRouter()
 const store = usePlayerStore()
 const audioStore = useAudioStore()
 
-// Mapped difficulty options
+// Difficulty options
 const difficulties = Object.entries(DIFFICULTY_LEVELS).map(([value, label]) => ({
     value: Number(value) as DifficultyLiteral,
     label: label.charAt(0) + label.slice(1).toLowerCase(),
 }))
 
-// Mapped theme options
+// Theme options
 const themeOptions = Object.entries(GAME_THEMES)
     .map(([key, label]) => ({
         value: Number(key) as GameThemeLiteral,
         label: label.charAt(0) + label.slice(1).toLowerCase()
     }))
-    .sort((a, b) => a.value - b.value) // <-- Sort by numerical key
+    .sort((a, b) => a.value - b.value) // Ensure sorted by enum
 
-
-// Refs for elements
+// Refs for navigation and focus logic
 const difficultySelect = ref<any>(null)
 const cardsSlider = ref<any>(null)
 const themeRefs: Ref<(Element | ComponentPublicInstance | null)[]> = ref([])
@@ -128,6 +128,7 @@ const selectCurrentTheme = () => {
     }
 }
 
+// Keyboard navigation logic
 const handleKeyDown = (e: KeyboardEvent) => {
     if (focusedIndex === SELECT_INDEX && ['ArrowLeft', 'ArrowRight'].includes(e.key)) return
     if (e.key === 'Escape') return void router.push('/config')
@@ -190,6 +191,7 @@ const handleDifficultyKey = (e: KeyboardEvent) => {
     }
 }
 
+// Persist player config to backend when changed (if user is set)
 watch(
     [() => store.difficulty, () => store.totalCards, () => store.theme],
     async () => {
