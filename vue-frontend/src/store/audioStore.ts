@@ -25,7 +25,6 @@ export const useAudioStore = defineStore("audio", {
     effectsMuted: false,
     effectsVolume: 70,
     effectInstance: null as HTMLAudioElement | null,
-    gameMusicInstance: null as HTMLAudioElement | null,
 
     // 📡 Internal tracking
     _wasBackgroundPlaying: false,
@@ -51,12 +50,6 @@ export const useAudioStore = defineStore("audio", {
         // If music is muted, pause immediately; if unmuted, play immediately
         if (muted) this.bgMusicInstance.pause();
         else this.bgMusicInstance.play().catch(() => {});
-      }
-      // If in gameplay, also apply to gameMusicInstance
-      if (this.gameMusicInstance) {
-        this.gameMusicInstance.muted = muted;
-        if (muted) this.gameMusicInstance.pause();
-        else this.gameMusicInstance.play().catch(() => {});
       }
     },
 
@@ -205,9 +198,6 @@ export const useAudioStore = defineStore("audio", {
           this._wasBackgroundPlaying = true;
         } else this._wasBackgroundPlaying = false;
       }
-
-      this.gameMusicInstance?.pause();
-      this.gameMusicInstance = null;
     },
 
     // 🔊 play effect

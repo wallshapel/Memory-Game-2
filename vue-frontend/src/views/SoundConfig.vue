@@ -1,3 +1,4 @@
+<!-- src/views/SoundConfig.vue -->
 <template>
   <v-app>
     <v-main>

@@ -1,3 +1,4 @@
+<!-- src/views/MainMenu.vue -->
 <template>
   <v-app>
     <v-main>
