@@ -11,6 +11,7 @@ import {
   RESULT_MODAL_DELAY_MS,
   GAME_EFFECTS,
   GAME_SCORE_MUSIC,
+  OTHER_MUSICAL_BACKGROUNDS,
 } from "../constants/assets";
 import { shuffleArray } from "../utils/shuffleArray";
 import { themeFetchers } from "../api/themeFetchers";
@@ -81,8 +82,21 @@ export const useGameStore = defineStore("game", () => {
    * Also handles the memorization and presentation timeouts before play starts.
    */
   async function initializeGame() {
+    // Centralized audio: always use playBackgroundForView
     audioStore.stopAllAudio();
-    audioStore.playGameMusicLoop(isCountdownMode.value);
+    if (isCountdownMode.value) {
+      audioStore.playBackgroundForView({
+        type: "fixed",
+        file: OTHER_MUSICAL_BACKGROUNDS.timetrial,
+        loop: true,
+      });
+    } else {
+      audioStore.playBackgroundForView({
+        type: "fixed",
+        file: OTHER_MUSICAL_BACKGROUNDS.gameplay,
+        loop: true,
+      });
+    }
 
     cards.value = [];
     cardsAreReady.value = false;
@@ -172,7 +186,6 @@ export const useGameStore = defineStore("game", () => {
     cardsAreReady.value = false;
 
     audioStore.stopAllAudio();
-    audioStore.playMusic();
 
     resetChronometer();
     initializeGame();
