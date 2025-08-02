@@ -106,14 +106,8 @@ onMounted(() => {
   watch(
     () => playerStore.isLoaded,
     (loaded) => {
-      if (loaded) {
-        const file = audioStore.getMusicFileFromKey(audioStore.musicTrack)
-        const audio = audioStore.playAudio(file, "music", {
-          loop: true,
-          volume: audioStore.musicVolume / 100,
-        })
-        audioStore.bgMusicInstance = audio
-      }
+      if (loaded)
+        audioStore.playBackgroundForView({ type: "user" });
     },
     { immediate: true }
   )
@@ -125,6 +119,7 @@ onMounted(() => {
 
   window.addEventListener('keydown', handleKeydown)
 })
+
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)

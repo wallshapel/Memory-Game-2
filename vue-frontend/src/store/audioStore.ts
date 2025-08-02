@@ -310,5 +310,35 @@ export const useAudioStore = defineStore("audio", {
     getMusicFileFromKey(key: BackgroundMusicIndex): string {
       return BACKGROUND_MUSIC[key].file;
     },
+
+    /**
+     * Plays background music for the current view.
+     * If "user", plays the track chosen in settings.
+     * If "fixed", plays the given file.
+     */
+    playBackgroundForView(
+      opts:
+        | { type: "user" }
+        | { type: "fixed"; file: string; loop?: boolean; volume?: number }
+    ) {
+      this.stopMusic();
+      if (opts.type === "user") {
+        const { file } = BACKGROUND_MUSIC[this.musicTrack];
+        const audio = this.playAudio(file, "music", {
+          loop: true,
+          volume: this.musicVolume / 100,
+        });
+        this.bgMusicInstance = audio;
+      } else if (opts.type === "fixed") {
+        const audio = this.playAudio(opts.file, "music", {
+          loop: opts.loop ?? true,
+          volume:
+            typeof opts.volume === "number"
+              ? opts.volume / 100
+              : this.musicVolume / 100,
+        });
+        this.bgMusicInstance = audio;
+      }
+    },
   },
 });
