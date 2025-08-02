@@ -27,7 +27,6 @@ td {
             <v-container class="py-8" fluid>
                 <v-card class="mx-auto pa-6" max-width="800">
                     <h1 class="text-h5 font-weight-bold text-center mb-6">🏆 Top 20 Records</h1>
-
                     <v-table dense>
                         <thead>
                             <tr>
@@ -88,13 +87,22 @@ const selectableIndex = ref<number | null>(null)
 const audioStore = useAudioStore()
 const backButton = ref<any>(null)
 
+/**
+ * Checks if the record at index is selectable for the time attack.
+ */
 const isRecordSelectable = (index: number): boolean => {
     return selectableIndex.value !== null && index <= selectableIndex.value
 }
 
+/**
+ * Returns the label for a given difficulty value.
+ */
 const difficultyLabel = (value: number): string =>
     ['Easy', 'Medium', 'Hard'][value] || 'Unknown'
 
+/**
+ * Formats time in milliseconds as mm:ss.mmm
+ */
 const formatTime = (ms: number): string => {
     const minutes = Math.floor(ms / 60000)
     const seconds = Math.floor((ms % 60000) / 1000)
@@ -102,11 +110,17 @@ const formatTime = (ms: number): string => {
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(millis).padStart(3, '0')}`
 }
 
+/**
+ * Navigates back to the main menu and plays sound effect.
+ */
 const goBack = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
     router.push('/menu')
 }
 
+/**
+ * Starts a time attack challenge based on the selected record.
+ */
 const startTimeAttack = (record: any) => {
     router.push({
         path: '/game',
@@ -121,18 +135,20 @@ const startTimeAttack = (record: any) => {
     })
 }
 
-const checkAndPlayMusic = () => {
-    const expectedFile = OTHER_MUSICAL_BACKGROUNDS.records
-    const currentSrc = audioStore.bgMusicInstance?.src || ''
-    const isExpectedTrackPlaying =
-        currentSrc.includes(expectedFile) && !audioStore.bgMusicInstance?.paused
-
-    if (!isExpectedTrackPlaying) {
-        audioStore.stopAllAudio()
-        audioStore.playRecordsMusicLoop()
-    }
+/**
+ * Plays the fixed background track for records view, using the audioStore central function.
+ */
+const playRecordsBackground = () => {
+    audioStore.playBackgroundForView({
+        type: 'fixed',
+        file: OTHER_MUSICAL_BACKGROUNDS.records,
+        loop: true
+    })
 }
 
+/**
+ * Loads top records and determines which record is selectable.
+ */
 const loadRecords = async () => {
     try {
         records.value = await getTopRecords()
@@ -155,22 +171,23 @@ const loadRecords = async () => {
 // Watch to reload every time you enter /records
 watch(
     () => route.fullPath,
-    (newPath, oldPath) => {
-        // If you navigate to /records, reload
-        if (newPath === '/records')
-            loadRecords()
+    (newPath) => {
+        if (newPath === '/records') loadRecords()
     },
-    { immediate: true } // also executes when assembling
+    { immediate: true }
 )
 
 onMounted(() => {
-    if (route.path === '/records') checkAndPlayMusic()
+    if (route.path === '/records') playRecordsBackground()
     nextTick(() => {
         backButton.value?.$el?.focus()
     })
     window.addEventListener('keydown', handleKeydown)
 })
 
+/**
+ * Handles Escape key to return to menu.
+ */
 const handleKeydown = (e: KeyboardEvent) => {
     if (e.key === 'Escape') goBack()
 }
