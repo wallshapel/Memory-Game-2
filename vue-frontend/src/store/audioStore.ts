@@ -1,3 +1,4 @@
+// src/store/audioStore.ts
 import { defineStore } from "pinia";
 import {
   BASE_PATH_AUDIO_RESOURCES,
@@ -44,7 +45,19 @@ export const useAudioStore = defineStore("audio", {
 
     setMusicMuted(muted: boolean) {
       this.musicMuted = muted;
-      if (this.bgMusicInstance) this.bgMusicInstance.muted = muted;
+
+      if (this.bgMusicInstance) {
+        this.bgMusicInstance.muted = muted;
+        // If music is muted, pause immediately; if unmuted, play immediately
+        if (muted) this.bgMusicInstance.pause();
+        else this.bgMusicInstance.play().catch(() => {});
+      }
+      // If in gameplay, also apply to gameMusicInstance
+      if (this.gameMusicInstance) {
+        this.gameMusicInstance.muted = muted;
+        if (muted) this.gameMusicInstance.pause();
+        else this.gameMusicInstance.play().catch(() => {});
+      }
     },
 
     setMusicVolume(volume: number) {

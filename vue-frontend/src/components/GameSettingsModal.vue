@@ -1,3 +1,4 @@
+<!-- src/components/GameSettingsModal.vue -->
 <style scoped>
 .option-item {
     font-size: 18px;
