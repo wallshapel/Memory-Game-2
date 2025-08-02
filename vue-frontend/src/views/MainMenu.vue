@@ -45,18 +45,17 @@ const audioStore = useAudioStore()
 const showModal = ref(false)
 const playButton = ref<any>(null)
 const settingsButton = ref<any>(null)
-
 const recordsButton = ref<any>(null)
-
 const buttons = [playButton, settingsButton, recordsButton]
-
 let focusedIndex = 0
 
+// Navigates to the Records view
 const handleRecords = () => {
   audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
   router.push('/records')
 }
 
+// Handles Play button: checks if name exists before proceeding
 const handlePlay = () => {
   audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
   if (!playerStore.name.trim())
@@ -65,22 +64,26 @@ const handlePlay = () => {
     router.push('/game')
 }
 
+// Navigates to Settings view
 const handleOptions = () => {
   audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
   router.push('/config')
 }
 
+// Handles mouse hover to focus and play sound
 const handleHover = (index: number) => {
   focusedIndex = index
   buttons[focusedIndex].value?.$el?.focus()
   audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
 }
 
+// Called by the profile modal to redirect to Profile config
 const goToProfile = () => {
   showModal.value = false
   router.push('/config/profile')
 }
 
+// Handles keyboard navigation for menu
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'ArrowDown') {
     focusedIndex = (focusedIndex + 1) % buttons.length
@@ -100,14 +103,14 @@ function handleKeydown(e: KeyboardEvent) {
 }
 
 onMounted(() => {
-  audioStore.stopAllAudio();
+  audioStore.stopAllAudio()
 
-  // Wait for playerStore.isLoaded to be true to play the correct music.
+  // Wait for playerStore.isLoaded to be true to play the correct background music
   watch(
     () => playerStore.isLoaded,
     (loaded) => {
       if (loaded)
-        audioStore.playBackgroundForView({ type: "user" });
+        audioStore.playBackgroundForView({ type: "user" })
     },
     { immediate: true }
   )
@@ -119,7 +122,6 @@ onMounted(() => {
 
   window.addEventListener('keydown', handleKeydown)
 })
-
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeydown)

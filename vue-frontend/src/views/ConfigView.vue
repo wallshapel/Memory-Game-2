@@ -40,12 +40,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * ConfigView.vue logic
- * - Handles navigation between config subsections with sound feedback.
- * - Manages keyboard navigation between buttons.
- * - Ensures that config background music is only played when needed (not when coming from sound config).
- */
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAudioStore } from '../store/audioStore'

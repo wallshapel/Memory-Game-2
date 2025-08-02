@@ -1,24 +1,21 @@
+<!-- src/views/ProfileConfig.vue -->
 <template>
     <v-app>
         <v-main>
             <v-container class="d-flex flex-column align-center justify-center" style="min-height: 100vh;" fluid>
                 <h1 class="text-h5 mb-6">Player Profile</h1>
-
                 <v-card class="pa-6" width="100%" max-width="400" rounded="xl">
                     <v-text-field ref="nameInput" v-model="name" label="Enter your name" clearable maxlength="18"
                         counter outlined dense hide-details="auto" @keydown.enter="handleEnter"
                         @mouseenter="handleHover(0)" />
-
                     <v-btn ref="saveBtn" class="mt-4" color="primary" block :disabled="!isNameValid" @click="handleSave"
                         @mouseenter="handleHover(1)">
                         💾 Save
                     </v-btn>
-
                     <div v-if="statusMessage" class="text-success mt-4 text-center">
                         {{ statusMessage }}
                     </div>
-
-                    <v-btn ref="backBtn" class="mt-6" color="secondary" @click="handleBack" block max-width="400"
+                    <v-btn ref="backBtn" class="mt-6" color="secondary" block max-width="400" @click="handleBack"
                         @mouseenter="handleHover(2)">
                         ⬅ Back to Config
                     </v-btn>
@@ -57,29 +54,29 @@ const isNameValid = computed(() => {
 })
 
 const handleSave = async () => {
-    if (!isNameValid.value) return;
+    if (!isNameValid.value) return
 
-    const trimmedName = name.value.trim();
-    audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
+    const trimmedName = name.value.trim()
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR)
 
-    const exists = await checkUserExists(trimmedName);
+    const exists = await checkUserExists(trimmedName)
 
     if (exists) {
-        await store.loadUserSettingsByName(trimmedName);
-        statusMessage.value = "✔ User loaded";
+        await store.loadUserSettingsByName(trimmedName)
+        statusMessage.value = "✔ User loaded"
     } else {
-        await store.resetToDefaults();
-        store.setName(trimmedName);
-        await store.saveToBackend();
-        statusMessage.value = "✔ New user created";
+        await store.resetToDefaults()
+        store.setName(trimmedName)
+        await store.saveToBackend()
+        statusMessage.value = "✔ New user created"
     }
 
-    if (statusTimeoutId) clearTimeout(statusTimeoutId);
+    if (statusTimeoutId) clearTimeout(statusTimeoutId)
     statusTimeoutId = setTimeout(() => {
-        statusMessage.value = null;
-        statusTimeoutId = null;
-    }, 2000);
-};
+        statusMessage.value = null
+        statusTimeoutId = null
+    }, 2000)
+}
 
 const handleBack = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
@@ -115,6 +112,7 @@ const handleKeydown = (e: KeyboardEvent) => {
     }
 }
 
+// Focuses the target element for accessibility/keyboard navigation
 const focusElement = (index: number) => {
     const el = elements[index].value
     if (!el) return
@@ -126,11 +124,12 @@ const focusElement = (index: number) => {
             input.focus()
             input.select()
         }
-    } else 
-        el.$el?.focus?.()    
+    } else
+        el.$el?.focus?.()
     audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
 }
 
+// Plays sound and focuses element on hover (mouse navigation)
 const handleHover = (index: number) => {
     if (focusedIndex !== index) {
         focusedIndex = index
