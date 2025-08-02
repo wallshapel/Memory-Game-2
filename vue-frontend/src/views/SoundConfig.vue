@@ -118,15 +118,7 @@ const musicTracks = computed<Array<{ value: BackgroundMusicIndex; title: string 
 
 const playSelectedMusic = () => {
   const file = store.getMusicFileFromKey(store.musicTrack)
-  const src = `${BASE_PATH_AUDIO_RESOURCES.MUSIC_PATH}${file}.mp3`
-  const audio = new Audio(src)
-  audio.loop = true
-  audio.volume = musicVolume.value / 100
-  audio.muted = musicMuted.value
-  audio.play().catch(() => { })
-
-  store.bgMusicInstance?.pause()
-  store.bgMusicInstance = audio
+  store.playAndSetBgMusic(file, musicVolume.value, musicMuted.value)
 }
 
 const onVolumeChange = () => {
@@ -211,15 +203,8 @@ onMounted(() => {
   window.addEventListener('keydown', handleKeyDown, true)
   document.addEventListener('focusin', handleFocusIn)
 
-  const file = store.getMusicFileFromKey(store.musicTrack)
-  const src = `${BASE_PATH_AUDIO_RESOURCES.MUSIC_PATH}${file}.mp3`
-  const audio = new Audio(src)
-  audio.loop = true
-  audio.volume = musicVolume.value / 100
-  audio.muted = musicMuted.value
-  audio.play().catch(() => { })
-  store.bgMusicInstance?.pause()
-  store.bgMusicInstance = audio
+  store.playAndSetBgMusic(store.getMusicFileFromKey(store.musicTrack), musicVolume.value, musicMuted.value)
+
 })
 
 onBeforeUnmount(() => {

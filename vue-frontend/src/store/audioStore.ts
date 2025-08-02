@@ -8,30 +8,44 @@ import {
   GAME_SCORE_MUSIC,
 } from "../constants/assets";
 import { usePlayerStore } from "./playerStore";
+import type { IAudioSettings } from "../interfaces/IAudioSettings";
 
 export type BackgroundMusicIndex = keyof typeof BACKGROUND_MUSIC;
 type GameEffect = (typeof GAME_EFFECTS)[keyof typeof GAME_EFFECTS];
 type GameScoreMusic = (typeof GAME_SCORE_MUSIC)[keyof typeof GAME_SCORE_MUSIC];
 
+/**
+ * Pinia store for handling all audio logic, including background music
+ * and sound effects. Centralizes audio state for the entire application.
+ */
 export const useAudioStore = defineStore("audio", {
   state: () => ({
-    // 🎵 Background music
+    // 🎵 Background music track index (see BACKGROUND_MUSIC)
     musicTrack: usePlayerStore().backgroundMusic as BackgroundMusicIndex,
+    // Is background music muted?
     musicMuted: false,
+    // Background music volume (0-100)
     musicVolume: 50,
+    // Current background music audio instance
     bgMusicInstance: null as HTMLAudioElement | null,
 
     // 🔊 Sound effects
     effectsMuted: false,
+    // Effects volume (0-100)
     effectsVolume: 70,
+    // Current effect audio instance
     effectInstance: null as HTMLAudioElement | null,
 
-    // 📡 Internal tracking
+    // 📡 Internal flag for remembering background play state
     _wasBackgroundPlaying: false,
   }),
 
   actions: {
-    // 📻 Music Controls
+    /**
+     * Sets the current background music track and starts playing it if not muted.
+     * Stops any previous music first.
+     * @param track - Index of the background music to play.
+     */
     setMusicTrack(track: BackgroundMusicIndex) {
       if (this.bgMusicInstance) {
         this.bgMusicInstance.pause();
@@ -42,6 +56,10 @@ export const useAudioStore = defineStore("audio", {
       if (!this.musicMuted) this.playMusic();
     },
 
+    /**
+     * Mutes or unmutes background music. Pauses or resumes the current audio instance accordingly.
+     * @param muted - True to mute, false to unmute.
+     */
     setMusicMuted(muted: boolean) {
       this.musicMuted = muted;
 
@@ -53,26 +71,36 @@ export const useAudioStore = defineStore("audio", {
       }
     },
 
+    /**
+     * Sets the background music volume. Value is clamped between 0 and 100.
+     * @param volume - The new volume (0-100).
+     */
     setMusicVolume(volume: number) {
-      this.musicVolume = volume;
+      this.musicVolume = Math.max(0, Math.min(100, volume));
       if (this.bgMusicInstance) this.bgMusicInstance.volume = volume / 100;
     },
 
+    /**
+     * Mutes or unmutes all sound effects.
+     * @param muted - True to mute, false to unmute.
+     */
     setEffectsMuted(muted: boolean) {
       this.effectsMuted = muted;
     },
 
+    /**
+     * Sets the sound effects volume (0-100).
+     * @param volume - The new effects volume.
+     */
     setEffectsVolume(volume: number) {
       this.effectsVolume = volume;
     },
 
-    applyAudioSettings(settings: {
-      musicVolume?: number;
-      musicMuted?: boolean;
-      effectsVolume?: number;
-      effectsMuted?: boolean;
-      background?: number;
-    }) {
+    /**
+     * Applies a full set of audio settings at once (music/effects volume & mute state, music track).
+     * @param settings - Audio settings object.
+     */
+    applyAudioSettings(settings: IAudioSettings) {
       if (typeof settings.background === "number")
         this.musicTrack = settings.background as BackgroundMusicIndex;
       if (typeof settings.musicVolume === "number") {
@@ -90,7 +118,14 @@ export const useAudioStore = defineStore("audio", {
         this.effectsMuted = settings.effectsMuted;
     },
 
-    // 🔁 Music & Effects: Core Player
+    /**
+     * Creates and plays an audio file. Can be used for music or effects.
+     * Handles .mp3 extension automatically.
+     * @param fileName - File name, with or without .mp3 extension.
+     * @param type - "music" or "effect".
+     * @param options - Playback options (loop, volume).
+     * @returns The created HTMLAudioElement.
+     */
     playAudio(
       fileName: string,
       type: "music" | "effect",
@@ -100,22 +135,44 @@ export const useAudioStore = defineStore("audio", {
         type === "music"
           ? BASE_PATH_AUDIO_RESOURCES.MUSIC_PATH
           : BASE_PATH_AUDIO_RESOURCES.EFFECTS_PATH;
+      const finalFile = fileName.endsWith(".mp3")
+        ? fileName
+        : `${fileName}.mp3`;
+      const path = `${basePath}${finalFile}`;
 
-      const path = `${basePath}${fileName}.mp3`;
       const audio = new Audio(path);
 
       audio.loop = loop;
       audio.volume = volume;
       audio.muted = type === "music" ? this.musicMuted : this.effectsMuted;
 
-      audio.play().catch((err) => {
-        console.warn(`[⚠️ playAudio error] ${err.message}`);
-      });
+      audio.play().catch(() => {});
 
       return audio;
     },
 
-    // ▶️
+    /**
+     * Stops any currently playing background music and starts a new one.
+     * Typically used for immediate transitions (e.g., config screen).
+     * @param file - File name, with or without .mp3 extension.
+     * @param volume - Optional volume (0-100).
+     * @param muted - Optional mute state.
+     */
+    playAndSetBgMusic(file: string, volume?: number, muted?: boolean) {
+      this.bgMusicInstance?.pause();
+      const audio = this.playAudio(file, "music", {
+        loop: true,
+        volume:
+          typeof volume === "number" ? volume / 100 : this.musicVolume / 100,
+      });
+      audio.muted = typeof muted === "boolean" ? muted : this.musicMuted;
+      this.bgMusicInstance = audio;
+    },
+
+    /**
+     * Plays the background music currently set in `musicTrack`.
+     * If muted, does nothing.
+     */
     playMusic() {
       if (this.musicMuted) return;
 
@@ -129,15 +186,20 @@ export const useAudioStore = defineStore("audio", {
       this.bgMusicInstance = audio;
     },
 
-    // 🚫
+    /**
+     * Stops and cleans up the current background music instance.
+     */
     stopMusic() {
       if (this.bgMusicInstance) {
         this.bgMusicInstance.pause();
+        this.bgMusicInstance.src = "";
         this.bgMusicInstance = null;
       }
     },
 
-    // ⏯️ Resume
+    /**
+     * Resumes music if it was playing before the last interruption (e.g., after sound effect).
+     */
     resumeMusicIfWasPlaying() {
       if (this._wasBackgroundPlaying) {
         this._wasBackgroundPlaying = false;
@@ -145,7 +207,11 @@ export const useAudioStore = defineStore("audio", {
       }
     },
 
-    // 🎮 Game Music
+    /**
+     * Plays looping music for the game view, choosing track based on countdown mode.
+     * Stops any other audio first.
+     * @param isCountdownMode - Whether the game is in time attack mode.
+     */
     playGameMusicLoop(isCountdownMode = false) {
       this.stopAllAudio();
 
@@ -161,7 +227,9 @@ export const useAudioStore = defineStore("audio", {
       this.bgMusicInstance = audio;
     },
 
-    // ⚙️ Menu Music
+    /**
+     * Plays the looping menu music, unless already playing or muted.
+     */
     playMenuMusicLoop() {
       if (this.musicMuted || this.bgMusicInstance) return;
 
@@ -174,7 +242,9 @@ export const useAudioStore = defineStore("audio", {
       this.bgMusicInstance = audio;
     },
 
-    // 🏆 Records
+    /**
+     * Plays the looping records/score music, stopping any other music first.
+     */
     playRecordsMusicLoop() {
       this.stopAllAudio();
 
@@ -187,7 +257,10 @@ export const useAudioStore = defineStore("audio", {
       this.bgMusicInstance = audio;
     },
 
-    // 🚫 Stop all audio
+    /**
+     * Stops all audio (background and effects).
+     * Remembers whether background was playing for possible resume.
+     */
     stopAllAudio() {
       this.effectInstance?.pause();
       this.effectInstance = null;
@@ -200,7 +273,11 @@ export const useAudioStore = defineStore("audio", {
       }
     },
 
-    // 🔊 play effect
+    /**
+     * Plays a sound effect or special game music cue (victory/game over).
+     * Strong cues (like victory) also pause the background music.
+     * @param name - Effect or cue name (string key).
+     */
     playEffect(name: GameEffect | GameScoreMusic) {
       if (this.effectsMuted) return;
 
@@ -224,6 +301,12 @@ export const useAudioStore = defineStore("audio", {
       }
     },
 
+    /**
+     * Returns the filename (without extension) for the given background music index.
+     * Used for referencing music assets.
+     * @param key - Index of the background music.
+     * @returns File name string.
+     */
     getMusicFileFromKey(key: BackgroundMusicIndex): string {
       return BACKGROUND_MUSIC[key].file;
     },
