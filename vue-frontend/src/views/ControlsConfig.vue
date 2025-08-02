@@ -1,3 +1,4 @@
+<!-- src/views/ControlsConfig.vue -->
 <template>
     <v-app>
         <v-main>
@@ -43,20 +44,24 @@ const backBtn = ref()
 const focusables = [radioMouse, radioKeyboard, backBtn]
 let focusIndex = 0
 
+// Focuses the current element (radio or button)
 const focusCurrent = () => {
     const el = focusables[focusIndex].value?.$el?.querySelector('input, button') || focusables[focusIndex].value?.$el
     el?.focus()
 }
 
+// Updates store.controlMethod based on focus
 const updateSelection = () => {
     if (focusables[focusIndex] === radioMouse) store.controlMethod = 'mouse'
     if (focusables[focusIndex] === radioKeyboard) store.controlMethod = 'keyboard'
 }
 
+// Plays "over" sound effect for navigation
 const playOverSound = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
 }
 
+// Handles keyboard navigation and selection
 const handleKeyNavigation = (e: KeyboardEvent) => {
     if (e.key === 'ArrowUp') {
         e.preventDefault()
@@ -76,11 +81,13 @@ const handleKeyNavigation = (e: KeyboardEvent) => {
     }
 }
 
+// Handles back button click (with sound)
 const handleBack = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
     router.push('/config')
 }
 
+// Setup event listeners and initial focus
 onMounted(() => {
     window.addEventListener('keydown', handleKeyNavigation)
     nextTick(() => {
