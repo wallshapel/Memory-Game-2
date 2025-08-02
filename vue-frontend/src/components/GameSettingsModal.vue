@@ -14,6 +14,11 @@
 </style>
 
 <template>
+    <!--
+      GameSettingsModal
+      - Modal with quick in-game options: New Game, toggle music/effects, or exit.
+      - Communicates directly with Pinia stores.
+    -->
     <v-dialog v-model="internalModel" max-width="400">
         <v-card rounded="xl">
             <v-card-title class="d-flex justify-space-between align-center text-h6">
@@ -42,6 +47,12 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * GameSettingsModal.vue
+ * - Displays quick settings during gameplay.
+ * - New game, music/effects mute toggle, exit to menu.
+ * - Controls are routed through Pinia stores.
+ */
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../store/gameStore'
@@ -51,29 +62,47 @@ const game = useGameStore()
 const audio = useAudioStore()
 const router = useRouter()
 
+/**
+ * Binds dialog open state to game store property.
+ */
 const internalModel = computed({
     get: () => game.showSettingsModal,
     set: (val: boolean) => (game.showSettingsModal = val),
 })
 
+/**
+ * Closes the modal dialog.
+ */
 const close = () => {
     game.showSettingsModal = false
 }
 
+/**
+ * Starts a new game, closing the modal.
+ */
 const onNewGame = () => {
     game.resetGame()
     close()
 }
 
+/**
+ * Clears all game state and returns to menu.
+ */
 const onExit = () => {
     game.clearGame()
     router.push('/menu')
 }
 
+/**
+ * Toggles music mute via audio store.
+ */
 const toggleMusic = () => {
     audio.setMusicMuted(!audio.musicMuted)
 }
 
+/**
+ * Toggles effects mute via audio store.
+ */
 const toggleEffects = () => {
     audio.setEffectsMuted(!audio.effectsMuted)
 }

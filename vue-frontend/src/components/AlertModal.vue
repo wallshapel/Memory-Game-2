@@ -1,3 +1,4 @@
+<!-- src/components/AlertModal.vue -->
 <template>
   <v-dialog v-model="internalModelValue" max-width="400" @keydown.esc="handleClose">
     <v-card rounded="xl">
@@ -22,6 +23,24 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * AlertModal.vue
+ * --------------
+ * Simple modal dialog component for confirmations, errors, or alerts.
+ * Shows a title, a message, and a single action button. Supports closing with Escape key
+ * or close button. Focuses the action button on open.
+ *
+ * Props:
+ *  - title:       The dialog title.
+ *  - message:     The message or body content.
+ *  - actionLabel: The label of the main action button.
+ *  - modelValue:  Whether the dialog is open (v-model).
+ *
+ * Emits:
+ *  - update:modelValue (boolean): When modal open/close state changes.
+ *  - confirm: When the action button is pressed.
+ */
+
 import { computed, ref, watch, nextTick } from 'vue'
 
 const props = defineProps<{
@@ -36,30 +55,25 @@ const emit = defineEmits<{
   (e: 'confirm'): void
 }>()
 
+// Internal v-model binding for dialog open/close state
 const internalModelValue = computed({
   get: () => props.modelValue,
   set: (val: boolean) => emit('update:modelValue', val),
 })
 
-const emitConfirm = () => {
-  emit('confirm')
-}
+// Emits the confirm event when the action button is pressed
+const emitConfirm = () => emit('confirm')
 
-const handleClose = () => {
-  emit('update:modelValue', false)
-}
+// Handles modal close (Escape key or close button)
+const handleClose = () => emit('update:modelValue', false)
 
-// 👉 Focus logic
+// Focus the action button whenever the dialog is opened
 const actionButton = ref<any>(null)
-
 watch(
   () => props.modelValue,
   (isOpen) => {
-    if (isOpen) {
-      nextTick(() => {
-        actionButton.value?.$el?.focus()
-      })
-    }
+    if (isOpen)
+      nextTick(() => actionButton.value?.$el?.focus())
   }
 )
 </script>

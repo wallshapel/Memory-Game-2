@@ -1,5 +1,11 @@
 <!-- src/components/GameResultModal.vue -->
 <template>
+    <!--
+      GameResultModal
+      - Modal dialog showing the result (win or lose) after each game.
+      - Handles "New Record" for time attack mode.
+      - All actions are accessible and focused automatically.
+    -->
     <v-dialog v-model="game.showResultModal" max-width="460" persistent>
         <v-card rounded="xl" class="text-center pt-6 pb-4 px-4">
             <!-- 🎆 Victory animation (only if you win) -->
@@ -44,6 +50,12 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * GameResultModal.vue
+ * - Displays after each game with game result and options.
+ * - Shows fireworks and "New Record" banner if time attack record beaten.
+ * - Allows quick navigation to new game, menu, or records.
+ */
 import { ref, watch, nextTick, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../store/gameStore'
@@ -52,14 +64,23 @@ import { FIREWORK_GIF } from '../constants/assets'
 const game = useGameStore()
 const router = useRouter()
 
+// Ref for auto-focus on primary button
 const restartButton = ref<any>(null)
 
+/**
+ * Calculates the time used for this session.
+ * - If time attack, it's the difference between the limit and remaining time.
+ * - Else, it's just the elapsed milliseconds.
+ */
 const timeUsed = computed(() => {
     return game.isCountdownMode
         ? game.countdownLimit - game.milliseconds
         : game.milliseconds
 })
 
+/**
+ * Formats the time in mm:ss.mmm format for display.
+ */
 const formattedResultTime = computed(() => {
     const ms = timeUsed.value % 1000
     const totalSeconds = Math.floor(timeUsed.value / 1000)
@@ -69,22 +90,33 @@ const formattedResultTime = computed(() => {
     return `${minutes}:${seconds}.${millis}`
 })
 
-// This computed checks if the user just beat the time attack record
+/**
+ * Indicates if the player beat their time attack record.
+ */
 const isTimeAttackRecordBeaten = computed(() =>
     game.isCountdownMode && game.didBeatRecord && game.hasWon
 )
 
+/**
+ * Restart the game with current settings.
+ */
 const handleRestart = () => {
     game.resetGame()
     game.showResultModal = false
 }
 
+/**
+ * Exit to main menu, cleaning up state.
+ */
 const handleExit = () => {
     game.clearGame()
     game.showResultModal = false
     router.push('/menu')
 }
 
+/**
+ * Navigates to records view.
+ */
 const goToRecords = () => {
     game.showResultModal = false
     router.push('/records')
