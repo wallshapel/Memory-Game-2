@@ -26,18 +26,36 @@ const service = userSettingsServiceProvider();
  *           schema:
  *             type: object
  *             properties:
- *               name:         { type: string }
- *               difficulty:   { type: integer }
- *               theme:        { type: integer }
- *               totalCards:   { type: integer }
- *               coverType:    { type: string, enum: ["default", "uploaded"] }
- *               coverFileName:{ type: string }
- *               controlMethod:{ type: string, enum: ["mouse", "keyboard"] }
- *               background:   { type: integer }
- *               musicVolume:  { type: integer }
- *               musicMuted:   { type: boolean }
- *               effectsVolume:{ type: integer }
- *               effectsMuted: { type: boolean }
+ *               name:
+ *                 type: string
+ *               difficulty:
+ *                 type: integer
+ *               theme:
+ *                 type: integer
+ *               totalCards:
+ *                 type: integer
+ *               coverType:
+ *                 type: string
+ *                 enum:
+ *                   - default
+ *                   - uploaded
+ *               coverFileName:
+ *                 type: string
+ *               controlMethod:
+ *                 type: string
+ *                 enum:
+ *                   - mouse
+ *                   - keyboard
+ *               background:
+ *                 type: integer
+ *               musicVolume:
+ *                 type: integer
+ *               musicMuted:
+ *                 type: boolean
+ *               effectsVolume:
+ *                 type: integer
+ *               effectsMuted:
+ *                 type: boolean
  *             required:
  *               - name
  *               - difficulty
@@ -64,7 +82,8 @@ const service = userSettingsServiceProvider();
  *             schema:
  *               type: object
  *               properties:
- *                 error: { type: string }
+ *                 error:
+ *                   type: string
  */
 router.post("/", saveSettings(service)); // POST /api/user-settings
 
@@ -90,7 +109,8 @@ router.post("/", saveSettings(service)); // POST /api/user-settings
  *             schema:
  *               type: object
  *               properties:
- *                 error: { type: string }
+ *                 error:
+ *                   type: string
  */
 router.get("/latest", fetchLatestSettings(service)); // GET /api/user-settings/latest
 
@@ -117,7 +137,8 @@ router.get("/latest", fetchLatestSettings(service)); // GET /api/user-settings/l
  *             schema:
  *               type: object
  *               properties:
- *                 exists: { type: boolean }
+ *                 exists:
+ *                   type: boolean
  *       400:
  *         description: Error checking user existence
  *         content:
@@ -125,7 +146,8 @@ router.get("/latest", fetchLatestSettings(service)); // GET /api/user-settings/l
  *             schema:
  *               type: object
  *               properties:
- *                 error: { type: string }
+ *                 error:
+ *                   type: string
  */
 router.get("/exists/:name", checkUserExists(service)); // GET /api/user-settings/exists/:name
 
@@ -158,7 +180,8 @@ router.get("/exists/:name", checkUserExists(service)); // GET /api/user-settings
  *             schema:
  *               type: object
  *               properties:
- *                 error: { type: string }
+ *                 error:
+ *                   type: string
  */
 router.get("/name/:name", fetchUserByName(service)); // GET /api/user-settings/name/:name
 
@@ -171,18 +194,37 @@ export default router;
  *     UserSettings:
  *       type: object
  *       properties:
- *         name:          { type: string }
- *         difficulty:    { type: integer }
- *         theme:         { type: integer }
- *         totalCards:    { type: integer }
- *         coverType:     { type: string, enum: ["default", "uploaded"] }
- *         coverFileName: { type: string }
- *         controlMethod: { type: string, enum: ["mouse", "keyboard"] }
- *         background:    { type: integer }
- *         musicVolume:   { type: integer }
- *         musicMuted:    { type: boolean }
- *         effectsVolume: { type: integer }
- *         effectsMuted:  { type: boolean }
- *         createdAt:     { type: string, format: date-time }
+ *         name:
+ *           type: string
+ *         difficulty:
+ *           type: integer
+ *         theme:
+ *           type: integer
+ *         totalCards:
+ *           type: integer
+ *         coverType:
+ *           type: string
+ *           enum:
+ *             - default
+ *             - uploaded
+ *         coverFileName:
+ *           type: string
+ *         controlMethod:
+ *           type: string
+ *           enum:
+ *             - mouse
+ *             - keyboard
+ *         background:
+ *           type: integer
+ *         musicVolume:
+ *           type: integer
+ *         musicMuted:
+ *           type: boolean
+ *         effectsVolume:
+ *           type: integer
+ *         effectsMuted:
+ *           type: boolean
+ *         createdAt:
+ *           type: string
+ *           format: date-time
  */
-
