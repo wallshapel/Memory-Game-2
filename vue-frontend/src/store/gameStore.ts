@@ -178,7 +178,10 @@ export const useGameStore = defineStore("game", () => {
     hasWon.value = false;
     hasLost.value = false;
     successCount.value = 0;
-    failCount.value = 0;
+    failCount.value =
+      isCountdownMode.value && initialMistakesAllowed.value !== null
+        ? initialMistakesAllowed.value
+        : 0;
     mistakesMade.value = 0;
     firstCard.value = null;
     secondCard.value = null;
@@ -440,6 +443,20 @@ export const useGameStore = defineStore("game", () => {
     targetRecordTime.value = typeof targetTime === "number" ? targetTime : null;
   }
 
+  /**
+   * Updates the target record time and allowed mistakes for countdown mode.
+   * Also updates the countdown limit to match the new target time.
+   * @param newTime - The new record time in milliseconds to set as target
+   * @param newMistakes - The new allowed mistakes count for countdown mode
+   */
+  function updateTargetRecord(newTime: number, newMistakes: number) {
+    if (isCountdownMode.value) {
+      targetRecordTime.value = newTime;
+      initialMistakesAllowed.value = newMistakes;
+      countdownLimit.value = newTime; // Update the counter limit
+    }
+  }
+
   // ==== Exposed state and actions ====
   return {
     cards,
@@ -472,5 +489,6 @@ export const useGameStore = defineStore("game", () => {
     stopChronometer,
     resetChronometer,
     setCountdownMode,
+    updateTargetRecord,
   };
 });

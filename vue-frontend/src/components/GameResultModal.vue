@@ -101,9 +101,18 @@ const isTimeAttackRecordBeaten = computed(() =>
  * Restart the game with current settings.
  */
 const handleRestart = () => {
-    game.resetGame()
-    game.showResultModal = false
-}
+    if (isTimeAttackRecordBeaten.value) {
+        const newTime = timeUsed.value;
+        game.updateTargetRecord(newTime, game.mistakesMade);
+
+        // Make sure the stopwatch uses the new time.
+        game.countdownLimit = newTime;
+        game.resetChronometer();
+    }
+
+    game.resetGame();
+    game.showResultModal = false;
+};
 
 /**
  * Exit to main menu, cleaning up state.
