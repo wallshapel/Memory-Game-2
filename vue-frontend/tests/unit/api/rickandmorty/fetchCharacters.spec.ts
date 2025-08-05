@@ -14,7 +14,7 @@ describe("fetchCharacters", () => {
     vi.clearAllMocks();
   });
 
-  it("devuelve el número correcto de personajes", async () => {
+  it("returns the correct number of characters", async () => {
     mockedAxios.get.mockResolvedValueOnce({
       data: {
         results: [
@@ -32,13 +32,13 @@ describe("fetchCharacters", () => {
     expect(chars[1].imageUrl).toBe("morty.png");
   });
 
-  it("lanza error si se piden más personajes que el máximo", async () => {
+  it("throws an error if more characters than the maximum are requested", async () => {
     await expect(fetchCharacters(900)).rejects.toThrow(
       /Cannot fetch more than/
     );
   });
 
-  it("devuelve array vacío si se pide 0 o negativo", async () => {
+  it("returns an empty array if 0 or a negative number is requested", async () => {
     await expect(fetchCharacters(0)).resolves.toEqual([]);
     await expect(fetchCharacters(-2)).resolves.toEqual([]);
   });

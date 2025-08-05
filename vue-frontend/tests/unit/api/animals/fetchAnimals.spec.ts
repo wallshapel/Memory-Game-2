@@ -3,7 +3,7 @@ import { fetchAnimals } from "../../../../src/api/animals/fetchAnimals";
 import axios from "axios";
 import * as shuffleModule from "../../../../src/utils/shuffleArray";
 
-// Mock de shuffleArray para que devuelva igual el array recibido
+// Mock shuffleArray to return the same array it received
 vi.spyOn(shuffleModule, "shuffleArray").mockImplementation((arr: any) => arr);
 
 vi.mock("axios");
@@ -12,12 +12,12 @@ const mockedAxios = axios as unknown as { get: ReturnType<typeof vi.fn> };
 describe("fetchAnimals", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Opcional: Mockea Math.random para que siempre devuelva 0 (primera página)
+    // Optional: Mock Math.random to always return 0 (first page)
     vi.spyOn(Math, "random").mockReturnValue(0);
   });
 
-  it("devuelve el número correcto de animales", async () => {
-    // Siempre devuelve suficientes animales para cubrir lo pedido (3)
+  it("returns the correct number of animals", async () => {
+    // Always returns enough animals to cover the requested amount (3)
     mockedAxios.get.mockResolvedValue({
       data: {
         entries: [
@@ -37,17 +37,17 @@ describe("fetchAnimals", () => {
     });
   });
 
-  it("lanza error si se piden más animales que el máximo", async () => {
+  it("throws an error if more animals than the maximum are requested", async () => {
     await expect(fetchAnimals(100)).rejects.toThrow(/Cannot fetch more than/);
   });
 
-  it("devuelve array vacío si se pide 0 o negativo", async () => {
+  it("returns an empty array if 0 or a negative number is requested", async () => {
     await expect(fetchAnimals(0)).resolves.toEqual([]);
     await expect(fetchAnimals(-2)).resolves.toEqual([]);
   });
 
-  it("lanza error si la petición falla", async () => {
-    // Ahora TODAS las llamadas fallan
+  it("throws an error if the request fails", async () => {
+    // All requests fail now
     mockedAxios.get.mockRejectedValue(new Error("fail"));
     await expect(fetchAnimals(2)).rejects.toThrow(
       /Failed to fetch animal cards/

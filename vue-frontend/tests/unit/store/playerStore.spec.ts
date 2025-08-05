@@ -23,7 +23,7 @@ vi.mock("../../../src/constants/assets", () => ({
   GAME_THEMES: { 0: "nature", 1: "space", 2: "ocean" },
 }));
 
-// <-- ¡Aquí está el fix mágico! -->
+// <-- Here's the magic fix! -->
 const { getLatestUserSettings, getUserSettingsByName, saveUserSettings } =
   userSettingsApi as unknown as {
     getLatestUserSettings: ReturnType<typeof vi.fn>;

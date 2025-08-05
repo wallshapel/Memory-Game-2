@@ -9,18 +9,18 @@ globalThis.Audio = vi.fn().mockImplementation(() => ({
   removeEventListener: vi.fn(),
 })) as any;
 
-// Pinia y stores reales (NO mockees playerStore aquí)
+// Real Pinia and stores (DO NOT mock playerStore here)
 import { setActivePinia, createPinia } from "pinia";
 import { useGameStore } from "../../../src/store/gameStore";
 import { usePlayerStore } from "../../../src/store/playerStore";
 
-// Importa tus constantes reales
+// Import real constants
 import {
   CARD_DISPLAY_SETTINGS,
   DELAY_MEMORIZATION_PHASE,
 } from "../../../src/constants/assets";
 
-// Mocks solo para dependencias secundarias
+// Mocks only for secondary dependencies
 vi.mock("../../../src/store/audioStore", () => ({
   useAudioStore: vi.fn(() => ({
     stopAllAudio: vi.fn(),
@@ -50,11 +50,11 @@ describe("gameStore", () => {
   });
 
   afterEach(() => {
-    vi.useRealTimers(); // Limpiar cualquier fake timer activo
-    vi.restoreAllMocks(); // Limpiar todos los mocks
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
-  it("inicializa el juego correctamente", async () => {
+  it("initializes the game correctly", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
     playerStore.theme = 0;
@@ -69,7 +69,7 @@ describe("gameStore", () => {
     expect(store.cards[0].flipped).toBe(false);
   });
 
-  it("maneja un click correcto en una carta (primer click)", async () => {
+  it("handles a valid click on a card (first click)", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
     playerStore.theme = 0;
@@ -87,7 +87,7 @@ describe("gameStore", () => {
     expect(store.secondCard).toBe(null);
   });
 
-  it("no permite click si el juego está ganado o perdido", async () => {
+  it("does not allow click if the game is won or lost", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
     playerStore.theme = 0;
@@ -111,7 +111,7 @@ describe("gameStore", () => {
     expect(card.flipped).toBe(false);
   });
 
-  it("al hacer match incrementa successCount y bloquea cartas", async () => {
+  it("on match, increments successCount and blocks cards", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
     playerStore.theme = 0;
@@ -137,7 +137,7 @@ describe("gameStore", () => {
     expect(store.secondCard).toBe(null);
   });
 
-  it("al no hacer match, incrementa mistakesMade y resetea selección", async () => {
+  it("on no match, increments mistakesMade and resets selection", async () => {
     vi.useFakeTimers(); // Activar fake timers
 
     const store = useGameStore();
@@ -159,14 +159,14 @@ describe("gameStore", () => {
     store.handleCardClick(b);
     expect(store.mistakesMade).toBe(1);
 
-    // Avanzar el tiempo artificialmente (el timeout para desflipping suele ser 1000ms)
+    // Advance time artificially (the timeout for deflipping is usually 1000ms).
     vi.advanceTimersByTime(1100);
 
     expect(a.flipped).toBe(false);
     expect(b.flipped).toBe(false);
   });
 
-  it("resetGame resetea correctamente el estado", async () => {
+  it("resetGame properly resets the state", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
     playerStore.theme = 0;
@@ -199,7 +199,7 @@ describe("gameStore", () => {
     expect(store.cardsAreReady).toBe(false);
   });
 
-  it("clearGame limpia absolutamente todo el estado", async () => {
+  it("clearGame clears all state completely", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
     playerStore.theme = 0;
@@ -230,7 +230,7 @@ describe("gameStore", () => {
     expect(store.milliseconds).toBe(0);
   });
 
-  it("setCountdownMode cambia a modo cuenta regresiva", () => {
+  it("setCountdownMode sets countdown mode correctly", () => {
     const store = useGameStore();
     store.setCountdownMode(60000, 2, 30000);
     expect(store.isCountdownMode).toBe(true);
@@ -240,7 +240,7 @@ describe("gameStore", () => {
   });
 
   // ---- TESTS DE maxFails ----
-  it("computed maxFails calcula correctamente para EASY", () => {
+  it("computed maxFails calculates correctly for EASY", () => {
     setActivePinia(createPinia());
     const playerStore = usePlayerStore();
     playerStore.difficulty = 0;
@@ -249,7 +249,7 @@ describe("gameStore", () => {
     expect(store.maxFails).toBe(6); // 8/2 + 2
   });
 
-  it("computed maxFails calcula correctamente para MEDIUM", () => {
+  it("computed maxFails calculates correctly for MEDIUM", () => {
     setActivePinia(createPinia());
     const playerStore = usePlayerStore();
     playerStore.difficulty = 1;
@@ -258,7 +258,7 @@ describe("gameStore", () => {
     expect(store.maxFails).toBe(4); // 8/2
   });
 
-  it("computed maxFails calcula correctamente para HARD", () => {
+  it("computed maxFails calculates correctly for HARD", () => {
     setActivePinia(createPinia());
     const playerStore = usePlayerStore();
     playerStore.difficulty = 2;
@@ -267,7 +267,7 @@ describe("gameStore", () => {
     expect(store.maxFails).toBe(2); // 8/2 - 2
   });
 
-  it("initializeGame inicializa y configura cartas correctamente (modo normal)", async () => {
+  it("initializeGame initializes and sets up cards correctly (normal mode)", async () => {
     vi.useFakeTimers();
 
     setActivePinia(createPinia());
@@ -279,16 +279,16 @@ describe("gameStore", () => {
 
     store.isCountdownMode = false;
 
-    // Iniciar el juego (devuelve promesa por fetch)
+    // Start game (returns promise by fetch)
     const initializationPromise = store.initializeGame();
-    await initializationPromise; // Espera fetch de cartas
+    await initializationPromise; // Wait for letter fetch
 
-    // Simula el paso del tiempo de presentación y memorización y animación de flip
-    vi.advanceTimersByTime(CARD_DISPLAY_SETTINGS.CARD_PRESENTATION_DELAY_MS); // Presentación (1000ms)
-    vi.advanceTimersByTime(DELAY_MEMORIZATION_PHASE.MEMORIZATION_DELAY_EASY); // Memorización (14000ms)
-    vi.advanceTimersByTime(CARD_DISPLAY_SETTINGS.CARD_FLIP_ANIMATION_MS); // Flip final (590ms)
+    // Simulates the passage of presentation and memorisation time and flip animation
+    vi.advanceTimersByTime(CARD_DISPLAY_SETTINGS.CARD_PRESENTATION_DELAY_MS); // Presentation (1000ms)
+    vi.advanceTimersByTime(DELAY_MEMORIZATION_PHASE.MEMORIZATION_DELAY_EASY); // Memorisation (14000ms)
+    vi.advanceTimersByTime(CARD_DISPLAY_SETTINGS.CARD_FLIP_ANIMATION_MS); // Final flip (590ms)
 
-    // Ahora sí puedes hacer los asserts:
+    //  Now you can make the asserts:
     expect(store.cards.length).toBe(4);
 
     store.cards.forEach((card) => {
@@ -300,18 +300,18 @@ describe("gameStore", () => {
     vi.useRealTimers();
   });
 
-  it("initializeGame no hace nada si el theme seleccionado no tiene fetcher", async () => {
+  it("initializeGame does nothing if the selected theme has no fetcher", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
-    playerStore.theme = 99; // theme inválido
+    playerStore.theme = 99; // invalid theme
     playerStore.totalCards = 4;
 
-    // Opcional: espiar console.error para afirmar que ocurre el error
+    // Optional: spy on console.error to assert that the error occurs.
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     await store.initializeGame();
 
-    expect(store.cards.length).toBe(0); // No hay cartas
+    expect(store.cards.length).toBe(0); // No letters
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining("Error fetching cards:"),
       expect.objectContaining({
@@ -321,12 +321,12 @@ describe("gameStore", () => {
     errorSpy.mockRestore();
   });
 
-  it("initializeGame no hace nada si el fetcher lanza un error", async () => {
-    // Guardamos el fetcher original
+  it("initializeGame does nothing if the fetcher throws an error", async () => {
+    // We keep the original fetcher
     const { themeFetchers } = await import("../../../src/api/themeFetchers");
     const originalFetcher = themeFetchers[0];
     themeFetchers[0] = vi.fn(async () => {
-      throw new Error("¡Falló el fetch!");
+      throw new Error("Missed the fetch!");
     });
 
     const store = useGameStore();
@@ -334,7 +334,7 @@ describe("gameStore", () => {
     playerStore.theme = 0;
     playerStore.totalCards = 4;
 
-    // Espiar el error
+    // Spy on the error
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     await store.initializeGame();
@@ -342,42 +342,42 @@ describe("gameStore", () => {
     expect(store.cards.length).toBe(0);
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining("Error fetching cards:"),
-      expect.objectContaining({ message: "¡Falló el fetch!" })
+      expect.objectContaining({ message: "Missed the fetch!" })
     );
 
-    // Restauramos fetcher original
+    // We restore original fetcher
     themeFetchers[0] = originalFetcher;
     errorSpy.mockRestore();
   });
 
-  it("resetGame deja failCount según el modo: 0 en normal, initialMistakesAllowed en countdown", async () => {
-    // Modo normal
+  it("resetGame sets failCount depending on the mode: 0 in normal, initialMistakesAllowed in countdown", async () => {
+    // Normal mode
     const store = useGameStore();
     store.isCountdownMode = false;
-    // Ponerlo en cualquier valor diferente de 0 para probar el reset
+    // Set to any value other than 0 to test the reset.
     store.failCount = 42;
 
     await store.resetGame();
     expect(store.failCount).toBe(0);
 
-    // Modo countdown
+    // Countdown mode
     store.isCountdownMode = true;
     store.initialMistakesAllowed = 7;
-    // Ponemos cualquier valor primero
+    // We put any value first
     store.failCount = 1;
 
     await store.resetGame();
     expect(store.failCount).toBe(7);
   });
 
-  it("handleCardClick ignora clicks si la carta está volteada, bloqueada o ya hay secondCard", async () => {
+  it("handleCardClick ignores clicks if card is flipped, blocked or secondCard is already set", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
     playerStore.theme = 0;
     playerStore.totalCards = 4;
     await store.initializeGame();
 
-    // Simular cartas desbloqueadas y no volteadas
+    // Simulate unblocked and unturned cards
     store.cards.forEach((card) => {
       card.flipped = false;
       card.blocked = false;
@@ -385,48 +385,48 @@ describe("gameStore", () => {
 
     const card = store.cards[0];
 
-    // 1. Si ya está flipped
+    // 1. If you are already flipped
     card.flipped = true;
     store.handleCardClick(card);
     expect(store.firstCard).toBe(null);
 
-    // 2. Si está bloqueada
+    // 2. If it is blocked
     card.flipped = false;
     card.blocked = true;
     store.handleCardClick(card);
     expect(store.firstCard).toBe(null);
 
-    // 3. Si ya hay secondCard
+    // 3. If there is already a secondCard
     card.blocked = false;
     store.secondCard = store.cards[1];
     store.handleCardClick(card);
     expect(card.flipped).toBe(false);
   });
 
-  it("checkMatch no hace nada si firstCard o secondCard son null", () => {
+  it("checkMatch does nothing if firstCard or secondCard is null", () => {
     const store = useGameStore();
 
-    // Caso 1: ambos null
+    // Case 1: both null
     store.firstCard = null;
     store.secondCard = null;
     expect(() => store.checkMatch()).not.toThrow();
 
-    // Caso 2: solo firstCard presente
+    // Case 2: only firstCard present
     store.firstCard = { name: "A" } as any;
     store.secondCard = null;
     expect(() => store.checkMatch()).not.toThrow();
 
-    // Caso 3: solo secondCard presente
+    // Case 3: only secondCard present
     store.firstCard = null;
     store.secondCard = { name: "A" } as any;
     expect(() => store.checkMatch()).not.toThrow();
 
-    // Opcional: verifica que no cambia successCount ni mistakesMade
+    // Optional: verify that neither successCount nor mistakesMade changes
     expect(store.successCount).toBe(0);
     expect(store.mistakesMade).toBe(0);
   });
 
-  it("watcher de failCount: pierde y muestra el modal si se alcanzan los fallos permitidos en modo normal", async () => {
+  it("failCount watcher: loses and shows modal if max fails are reached in normal mode", async () => {
     vi.useFakeTimers();
 
     const store = useGameStore();
@@ -458,7 +458,7 @@ describe("gameStore", () => {
     vi.useRealTimers();
   });
 
-  it("watcher de failCount: pierde y muestra el modal si failCount < 0 en modo countdown", async () => {
+  it("failCount watcher: loses and shows modal if failCount < 0 in countdown mode", async () => {
     vi.useFakeTimers();
 
     const store = useGameStore();
@@ -479,62 +479,62 @@ describe("gameStore", () => {
     vi.useRealTimers();
   });
 
-  it("startChronometer no crea múltiples intervalos si ya está activo", () => {
+  it("startChronometer does not create multiple intervals if already running", () => {
     const store = useGameStore();
     store.isCountdownMode = false;
 
-    // Llama dos veces
+    // Call twice
     store.startChronometer();
     const currentInterval = (store as any).interval;
     store.startChronometer();
     expect((store as any).interval).toBe(currentInterval);
 
-    store.stopChronometer(); // Limpieza
+    store.stopChronometer(); // Cleaning
   });
 
-  it("stopChronometer no falla si no hay intervalo activo", () => {
+  it("stopChronometer does not fail if no interval is active", () => {
     const store = useGameStore();
-    // No hay intervalo
+    // No interval
     expect(() => store.stopChronometer()).not.toThrow();
   });
 
-  it("resetChronometer pone los milisegundos en 0 o countdownLimit según el modo", () => {
+  it("resetChronometer resets milliseconds to 0 or countdownLimit based on mode", () => {
     const store = useGameStore();
 
-    // Modo normal
+    // Normal mode
     store.isCountdownMode = false;
     store.milliseconds = 999;
     store.resetChronometer();
     expect(store.milliseconds).toBe(0);
 
-    // Modo countdown
+    // Countdown mode
     store.isCountdownMode = true;
     store.countdownLimit = 12345;
     store.milliseconds = 5;
     store.resetChronometer();
     expect(store.milliseconds).toBe(12345);
 
-    store.stopChronometer(); // Limpieza
+    store.stopChronometer(); // Cleaning
   });
 
-  it("handleTimeOut solo hace efecto si el juego no está ganado ni perdido", () => {
+  it("handleTimeOut only triggers if game is not already won or lost", () => {
     const store = useGameStore();
 
-    // Si ya ganó, no cambia nada
+    // If you've already won, it doesn't change anything
     store.hasWon = true;
     store.hasLost = false;
     store.showResultModal = false;
     store.handleTimeOut();
     expect(store.hasLost).toBe(false);
 
-    // Si ya perdió, tampoco cambia nada
+    // If you've already lost, it doesn't change anything
     store.hasWon = false;
     store.hasLost = true;
     store.showResultModal = false;
     store.handleTimeOut();
     expect(store.showResultModal).toBe(false);
 
-    // Si no ha ganado ni perdido, sí marca como perdido y agenda modal
+    // If it has neither won nor lost, it does mark as lost and modal agenda.
     store.hasWon = false;
     store.hasLost = false;
     store.showResultModal = false;
@@ -542,10 +542,10 @@ describe("gameStore", () => {
     expect(store.hasLost).toBe(true);
   });
 
-  it("saveGameRecord no llama a saveRecord si no hay nombre de jugador", async () => {
+  it("saveGameRecord does not call saveRecord if player name is missing", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
-    playerStore.name = ""; // Sin nombre
+    playerStore.name = ""; // Unnamed
 
     const saveRecordMock = vi.spyOn(
       await import("../../../src/api/backend/records"),
@@ -558,7 +558,7 @@ describe("gameStore", () => {
     saveRecordMock.mockRestore();
   });
 
-  it("saveGameRecord llama a saveRecord en modo normal y no evalúa récord", async () => {
+  it("saveGameRecord calls saveRecord in normal mode and does not evaluate record", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
     playerStore.name = "Legato";
@@ -581,13 +581,13 @@ describe("gameStore", () => {
         mistakes: 1,
       })
     );
-    // En modo normal no hay récord
+    // No record in normal mode
     expect(store.didBeatRecord).toBe(false);
 
     saveRecordMock.mockRestore();
   });
 
-  it("saveGameRecord en modo countdown actualiza didBeatRecord correctamente", async () => {
+  it("saveGameRecord in countdown mode updates didBeatRecord correctly", async () => {
     const store = useGameStore();
     const playerStore = usePlayerStore();
     playerStore.name = "Legato";
@@ -596,7 +596,7 @@ describe("gameStore", () => {
     store.successCount = 2;
     store.mistakesMade = 1;
 
-    // Caso: NO bate récord (timeUsed > targetRecordTime)
+    // Case: NO record breaker (timeUsed > targetRecordTime)
     store.targetRecordTime = 5000;
     store.milliseconds = 4000; // timeUsed = 6000 > 5000
     const saveRecordMock = vi
@@ -606,7 +606,7 @@ describe("gameStore", () => {
     await (store as any).saveGameRecord();
     expect(store.didBeatRecord).toBe(false);
 
-    // Ahora SÍ bate récord (timeUsed < targetRecordTime)
+    // Now it DOES break record (timeUsed < targetRecordTime)
     store.targetRecordTime = 7000;
     store.milliseconds = 4000; // timeUsed = 6000 < 7000
     await (store as any).saveGameRecord();
