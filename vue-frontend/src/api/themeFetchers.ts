@@ -1,3 +1,4 @@
+// src/api/themeFetchers.ts
 import type { IThemeData } from "../interfaces/IThemeData";
 import { GAME_THEMES } from "../constants/assets";
 import { fetchAnimals } from "./animals/fetchAnimals";

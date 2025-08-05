@@ -478,6 +478,7 @@ export const useGameStore = defineStore("game", () => {
     mistakesMade,
     didBeatRecord,
     targetRecordTime,
+    initialMistakesAllowed,
     resetGame,
     initializeGame,
     handleCardClick,
@@ -490,5 +491,7 @@ export const useGameStore = defineStore("game", () => {
     resetChronometer,
     setCountdownMode,
     updateTargetRecord,
+    handleTimeOut,
+    saveGameRecord
   };
 });
