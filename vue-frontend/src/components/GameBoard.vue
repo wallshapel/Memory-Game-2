@@ -20,7 +20,8 @@
     -->
     <div v-if="game.cards.length > 0" :style="gridStyle" class="noselect"
         :class="{ 'disable-mouse': store.controlMethod === 'keyboard' }" @mousedown.prevent @selectstart.prevent>
-        <GameCard v-for="(card, index) in game.cards" :key="card.id" :card="card" :width="cardWidth" :height="cardHeight"
+        <GameCard v-for="(card, index) in game.cards" :key="card.id" :card="card" :width="cardWidth"
+            :height="cardHeight"
             :isFocused="store.controlMethod === 'keyboard' && game.cardsAreReady && index === game.focusedIndex" />
     </div>
 </template>
@@ -50,18 +51,19 @@ const cardHeight = ref(DEFAULT_CARDS_SIZE.height)
 // Dynamically adjust card size by breakpoint
 function updateCardSize() {
     const width = window.innerWidth
-    if (width <= BREAKPOINTS.xs.maxWidth)
-        cardWidth.value = BREAKPOINTS.xs.cardWidth,
-            cardHeight.value = BREAKPOINTS.xs.cardHeight
-    else if (width <= BREAKPOINTS.sm.maxWidth)
-        cardWidth.value = BREAKPOINTS.sm.cardWidth,
-            cardHeight.value = BREAKPOINTS.sm.cardHeight
-    else if (width <= BREAKPOINTS.md.maxWidth)
-        cardWidth.value = BREAKPOINTS.md.cardWidth,
-            cardHeight.value = BREAKPOINTS.md.cardHeight
-    else
-        cardWidth.value = BREAKPOINTS.lg.cardWidth,
-            cardHeight.value = BREAKPOINTS.lg.cardHeight
+    if (width <= BREAKPOINTS.xs.maxWidth) {
+        cardWidth.value = BREAKPOINTS.xs.cardWidth
+        cardHeight.value = BREAKPOINTS.xs.cardHeight
+    } else if (width <= BREAKPOINTS.sm.maxWidth) {
+        cardWidth.value = BREAKPOINTS.sm.cardWidth
+        cardHeight.value = BREAKPOINTS.sm.cardHeight
+    } else if (width <= BREAKPOINTS.md.maxWidth) {
+        cardWidth.value = BREAKPOINTS.md.cardWidth
+        cardHeight.value = BREAKPOINTS.md.cardHeight
+    } else {
+        cardWidth.value = BREAKPOINTS.lg.cardWidth
+        cardHeight.value = BREAKPOINTS.lg.cardHeight
+    }
 }
 
 // Calculates the most "square" grid possible for the number of cards
@@ -71,8 +73,12 @@ function calculateGrid(count: number): { columns: number; rows: number } {
         const cols = Math.ceil(count / rows)
         const area = cols * rows
         const diff = Math.abs(cols - rows)
-        if (diff < minDiff || (diff === minDiff && area < minArea))
-            bestCols = cols, bestRows = rows, minDiff = diff, minArea = area
+        if (diff < minDiff || (diff === minDiff && area < minArea)) {
+            bestCols = cols;
+            bestRows = rows;
+            minDiff = diff;
+            minArea = area;
+        }
     }
     return { columns: bestCols, rows: bestRows }
 }

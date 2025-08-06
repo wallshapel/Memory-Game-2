@@ -65,7 +65,7 @@ const game = useGameStore()
 const router = useRouter()
 
 // Ref for auto-focus on primary button
-const restartButton = ref<any>(null)
+const restartButton = ref<HTMLElement | null>(null)
 
 /**
  * Calculates the time used for this session.
@@ -120,7 +120,7 @@ const handleRestart = () => {
 const handleExit = () => {
     game.clearGame()
     game.showResultModal = false
-    router.push('/menu')
+    void router.push('/menu')
 }
 
 /**
@@ -128,7 +128,7 @@ const handleExit = () => {
  */
 const goToRecords = () => {
     game.showResultModal = false
-    router.push('/records')
+    void router.push('/records')
 }
 
 // Auto-focus restart/try again button when modal opens
@@ -136,8 +136,8 @@ watch(
     () => game.showResultModal,
     (visible) => {
         if (visible) {
-            nextTick(() => {
-                restartButton.value?.$el?.focus()
+            void nextTick(() => {
+                restartButton.value?.focus()
             })
         }
     }

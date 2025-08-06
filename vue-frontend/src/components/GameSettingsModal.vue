@@ -90,7 +90,7 @@ const onNewGame = () => {
  */
 const onExit = () => {
     game.clearGame()
-    router.push('/menu')
+    void router.push('/menu')
 }
 
 /**
