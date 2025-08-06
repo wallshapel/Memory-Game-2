@@ -110,7 +110,7 @@ const handleEscape = (e: KeyboardEvent) => {
  */
 const handleBack = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-    router.push('/config')
+    void router.push('/config')
 }
 
 /**
@@ -153,7 +153,7 @@ const handleFile = async (files: File[]) => {
         store.setCoverType('uploaded')
         if (store.name && store.name.trim().length > 0)
             await store.saveToBackend()
-    } catch (e) {
+    } catch {
         showError.value = true
     }
 }

@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, nextTick, type ComponentPublicInstance } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAudioStore } from '../store/audioStore'
 import { OTHER_MUSICAL_BACKGROUNDS, GAME_EFFECTS } from '../constants/assets'
@@ -50,47 +50,48 @@ const route = useRoute()
 const audioStore = useAudioStore()
 
 // Button refs for focus management
-const btn0 = ref<any>(null)
-const btn1 = ref<any>(null)
-const btn2 = ref<any>(null)
-const btn3 = ref<any>(null)
-const btn4 = ref<any>(null)
-const btn5 = ref<any>(null)
+const btn0 = ref<ComponentPublicInstance | null>(null)
+const btn1 = ref<ComponentPublicInstance | null>(null)
+const btn2 = ref<ComponentPublicInstance | null>(null)
+const btn3 = ref<ComponentPublicInstance | null>(null)
+const btn4 = ref<ComponentPublicInstance | null>(null)
+const btn5 = ref<ComponentPublicInstance | null>(null)
 const buttons = [btn0, btn1, btn2, btn3, btn4, btn5]
 
 let focusedIndex = 0
 
 // Handles keyboard navigation (arrow keys, Enter, Escape)
 function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'ArrowDown')
-        focusedIndex = (focusedIndex + 1) % buttons.length,
-            buttons[focusedIndex].value?.$el?.focus(),
-            audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER),
-            e.preventDefault()
-    else if (e.key === 'ArrowUp')
-        focusedIndex = (focusedIndex - 1 + buttons.length) % buttons.length,
-            buttons[focusedIndex].value?.$el?.focus(),
-            audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER),
-            e.preventDefault()
-    else if (e.key === 'Enter')
-        audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS),
-            buttons[focusedIndex].value?.$el?.click(),
-            e.preventDefault()
-    else if (e.key === 'Escape')
-        router.push('/menu')
+    if (e.key === 'ArrowDown') {
+        focusedIndex = (focusedIndex + 1) % buttons.length;
+        buttons[focusedIndex].value?.$el?.focus();
+        audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER);
+        e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+        focusedIndex = (focusedIndex - 1 + buttons.length) % buttons.length;
+        buttons[focusedIndex].value?.$el?.focus();
+        audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER);
+        e.preventDefault();
+    } else if (e.key === 'Enter') {
+        audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS);
+        buttons[focusedIndex].value?.$el?.click();
+        e.preventDefault();
+    } else if (e.key === 'Escape')
+        void router.push('/menu');
 }
 
 // Handles mouse hover for sound feedback and focus
 const handleHover = (index: number) => {
-    focusedIndex = index
-    buttons[focusedIndex].value?.$el?.focus()
-    audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
-}
+    focusedIndex = index;
+    const el = buttons[focusedIndex].value?.$el as HTMLElement | undefined;
+    el?.focus();
+    audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER);
+};
 
 // Handles button click with sound and navigation
 const handleClick = (routePath: string) => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-    router.push(routePath)
+    void router.push(routePath)
 }
 
 /**
@@ -99,24 +100,26 @@ const handleClick = (routePath: string) => {
  * If coming from outside config, or returning from SoundConfig, ensures config music is active.
  */
 const checkAndPlayMusic = () => {
-    const expectedFile = OTHER_MUSICAL_BACKGROUNDS.settings
-    const currentSrc = audioStore.bgMusicInstance?.src || ''
+    const expectedFile = OTHER_MUSICAL_BACKGROUNDS.settings;
+    const currentSrc = audioStore.bgMusicInstance?.src || '';
     const isExpectedTrackPlaying =
-        currentSrc.includes(expectedFile) && !audioStore.bgMusicInstance?.paused
+        currentSrc.includes(expectedFile) && !audioStore.bgMusicInstance?.paused;
 
-    if (!isExpectedTrackPlaying)
-        audioStore.stopAllAudio(),
-            audioStore.playMenuMusicLoop()
-}
+    if (!isExpectedTrackPlaying) {
+        audioStore.stopAllAudio();
+        audioStore.playMenuMusicLoop();
+    }
+};
 
 // On mount, focus first button and ensure config music is playing if on config root
 onMounted(() => {
     if (route.path === '/config') checkAndPlayMusic()
 
     nextTick(() => {
-        focusedIndex = 0
-        buttons[focusedIndex].value?.$el?.focus()
-    })
+        focusedIndex = 0;
+        const el = buttons[focusedIndex].value?.$el as HTMLElement | undefined;
+        el?.focus();
+    });
 
     window.addEventListener('keydown', handleKeydown)
 })

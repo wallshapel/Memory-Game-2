@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, nextTick, watch } from 'vue'
+import { onMounted, onBeforeUnmount, ref, nextTick, watch, type ComponentPublicInstance } from 'vue'
 import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
@@ -37,23 +37,23 @@ const router = useRouter()
 const store = usePlayerStore()
 const audioStore = useAudioStore()
 
-const radioMouse = ref()
-const radioKeyboard = ref()
-const backBtn = ref()
+const radioMouse = ref<ComponentPublicInstance | null>(null)
+const radioKeyboard = ref<ComponentPublicInstance | null>(null)
+const backBtn = ref<ComponentPublicInstance | null>(null)
 
 const focusables = [radioMouse, radioKeyboard, backBtn]
 let focusIndex = 0
 
 // Focuses the current element (radio or button)
 const focusCurrent = () => {
-    const el = focusables[focusIndex].value?.$el?.querySelector('input, button') || focusables[focusIndex].value?.$el
+    const el = focusables[focusIndex].value?.$el as HTMLElement | undefined
     el?.focus()
 }
 
 // Updates store.controlMethod based on focus
 const updateSelection = () => {
-    if (focusables[focusIndex] === radioMouse) store.controlMethod = 'mouse'
-    if (focusables[focusIndex] === radioKeyboard) store.controlMethod = 'keyboard'
+    if (focusables[focusIndex].value === radioMouse.value) store.controlMethod = 'mouse'
+    if (focusables[focusIndex].value === radioKeyboard.value) store.controlMethod = 'keyboard'
 }
 
 // Plays "over" sound effect for navigation
@@ -84,13 +84,13 @@ const handleKeyNavigation = (e: KeyboardEvent) => {
 // Handles back button click (with sound)
 const handleBack = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-    router.push('/config')
+    void router.push('/config')
 }
 
 // Setup event listeners and initial focus
 onMounted(() => {
     window.addEventListener('keydown', handleKeyNavigation)
-    nextTick(() => {
+    void nextTick(() => {
         // Sets initial focus according to selected option
         focusIndex = store.controlMethod === 'keyboard' ? 1 : 0
         focusCurrent()
