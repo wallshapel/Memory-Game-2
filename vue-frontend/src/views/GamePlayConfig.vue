@@ -70,25 +70,22 @@ const router = useRouter()
 const store = usePlayerStore()
 const audioStore = useAudioStore()
 
-// Difficulty options
 const difficulties = Object.entries(DIFFICULTY_LEVELS).map(([value, label]) => ({
     value: Number(value) as DifficultyLiteral,
     label: label.charAt(0) + label.slice(1).toLowerCase(),
 }))
 
-// Theme options
 const themeOptions = Object.entries(GAME_THEMES)
     .map(([key, label]) => ({
         value: Number(key) as GameThemeLiteral,
         label: label.charAt(0) + label.slice(1).toLowerCase()
     }))
-    .sort((a, b) => a.value - b.value) // Ensure sorted by enum
+    .sort((a, b) => a.value - b.value)
 
-// Refs for navigation and focus logic
-const difficultySelect = ref<any>(null)
-const cardsSlider = ref<any>(null)
+const difficultySelect = ref<ComponentPublicInstance | null>(null)
+const cardsSlider = ref<ComponentPublicInstance | null>(null)
 const themeRefs: Ref<(Element | ComponentPublicInstance | null)[]> = ref([])
-const backBtn = ref<any>(null)
+const backBtn = ref<ComponentPublicInstance | null>(null)
 
 let focusedIndex = -1
 const SELECT_INDEX = 0
@@ -96,14 +93,26 @@ const SLIDER_INDEX = 1
 const FIRST_THEME_INDEX = 2
 const BACK_BTN_INDEX = FIRST_THEME_INDEX + themeOptions.length
 
-const getFocusableElements = () => [
-    () => difficultySelect.value?.$el?.querySelector('input') ?? null,
-    () => cardsSlider.value?.$el?.querySelector('.v-slider-thumb') ?? null,
+const getFocusableElements = (): Array<() => HTMLElement | null> => [
+    // Difficulty select input
+    () => {
+        const el = difficultySelect.value?.$el as HTMLElement | undefined
+        return el?.querySelector('input') ?? null
+    },
+    // Cards slider thumb
+    () => {
+        const el = cardsSlider.value?.$el as HTMLElement | undefined
+        return el?.querySelector('.v-slider-thumb') ?? null
+    },
+    // Themes
     ...themeOptions.map((_, i) => () => {
         const ref = themeRefs.value[i]
-        return ref instanceof HTMLElement ? ref : (ref as ComponentPublicInstance)?.$el
+        if (!ref) return null
+        if (ref instanceof HTMLElement) return ref
+        return (ref as ComponentPublicInstance).$el as HTMLElement ?? null
     }),
-    () => backBtn.value?.$el ?? null
+    // Back button
+    () => (backBtn.value?.$el as HTMLElement | null) ?? null
 ]
 
 const focusElements = getFocusableElements()
@@ -128,10 +137,9 @@ const selectCurrentTheme = () => {
     }
 }
 
-// Keyboard navigation logic
 const handleKeyDown = (e: KeyboardEvent) => {
     if (focusedIndex === SELECT_INDEX && ['ArrowLeft', 'ArrowRight'].includes(e.key)) return
-    if (e.key === 'Escape') return void router.push('/config')
+    if (e.key === 'Escape') return void router.push('/config').catch(() => { })
     if ((e.key === 'Enter' || e.key === ' ') && focusedIndex >= FIRST_THEME_INDEX && focusedIndex < BACK_BTN_INDEX)
         return void (e.preventDefault(), selectCurrentTheme())
 
@@ -153,18 +161,19 @@ const handleKeyDown = (e: KeyboardEvent) => {
 }
 
 const handleFocusIn = () => {
-    const active = document.activeElement
+    const active = document.activeElement as HTMLElement
     const index = focusElements.findIndex(get => {
         const el = get()
-        return el === active || el?.contains(active)
+        return el === active || (el && el.contains(active))
     })
     if (index !== -1 && index !== focusedIndex) focusedIndex = index
 }
 
 onMounted(() => {
     setTimeout(() => focusElement(SELECT_INDEX), 100)
-    nextTick(() => {
-        const input = difficultySelect.value?.$el?.querySelector('input')
+    void nextTick(() => {
+        const el = difficultySelect.value?.$el as HTMLElement | undefined
+        const input = el?.querySelector('input')
         if (input) input.addEventListener('keydown', (e: KeyboardEvent) => {
             if (['ArrowUp', 'ArrowDown'].includes(e.key)) e.stopImmediatePropagation()
         }, true)
@@ -191,11 +200,10 @@ const handleDifficultyKey = (e: KeyboardEvent) => {
     }
 }
 
-// Persist player config to backend when changed (if user is set)
 watch(
     [() => store.difficulty, () => store.totalCards, () => store.theme],
     async () => {
-        if (store.name && store.name.trim().length > 0) 
+        if (store.name && store.name.trim().length > 0)
             await store.saveToBackend();
     }
 )

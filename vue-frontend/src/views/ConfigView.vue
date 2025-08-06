@@ -64,20 +64,24 @@ let focusedIndex = 0
 function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'ArrowDown') {
         focusedIndex = (focusedIndex + 1) % buttons.length;
-        buttons[focusedIndex].value?.$el?.focus();
+        const el = buttons[focusedIndex].value?.$el as HTMLElement | undefined;
+        el?.focus();
         audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER);
         e.preventDefault();
     } else if (e.key === 'ArrowUp') {
         focusedIndex = (focusedIndex - 1 + buttons.length) % buttons.length;
-        buttons[focusedIndex].value?.$el?.focus();
+        const el = buttons[focusedIndex].value?.$el as HTMLElement | undefined;
+        el?.focus();
         audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER);
         e.preventDefault();
     } else if (e.key === 'Enter') {
         audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS);
-        buttons[focusedIndex].value?.$el?.click();
+        const el = buttons[focusedIndex].value?.$el as HTMLElement | undefined;
+        el?.click();
         e.preventDefault();
-    } else if (e.key === 'Escape')
-        void router.push('/menu');
+    } else if (e.key === 'Escape') {
+        void router.push('/menu').catch(() => { });
+    }
 }
 
 // Handles mouse hover for sound feedback and focus
@@ -91,7 +95,7 @@ const handleHover = (index: number) => {
 // Handles button click with sound and navigation
 const handleClick = (routePath: string) => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-    void router.push(routePath)
+    void router.push(routePath).catch(() => { });
 }
 
 /**
@@ -115,7 +119,7 @@ const checkAndPlayMusic = () => {
 onMounted(() => {
     if (route.path === '/config') checkAndPlayMusic()
 
-    nextTick(() => {
+    void nextTick(() => {
         focusedIndex = 0;
         const el = buttons[focusedIndex].value?.$el as HTMLElement | undefined;
         el?.focus();
