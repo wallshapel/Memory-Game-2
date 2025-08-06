@@ -19,7 +19,7 @@ export const getTopRecords = async () => {
  * @returns The server response.
  */
 export const saveRecord = async (record: ISaveRecord) => {
-  const { data } = await api.post("/records", record);
+  const { data } = await api.post<IGameRecord>("/records", record);
   return data;
 };
 
@@ -30,6 +30,6 @@ export const saveRecord = async (record: ISaveRecord) => {
  * @returns The best IGameRecord for the user.
  */
 export const getBestRecordForUser = async (name: string) => {
-  const { data } = await api.get(`/records/best/${name}`);
+  const { data } = await api.get<IGameRecord>(`/records/best/${name}`);
   return data;
 };

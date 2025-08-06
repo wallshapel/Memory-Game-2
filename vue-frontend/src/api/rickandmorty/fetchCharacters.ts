@@ -2,6 +2,8 @@
 import axios from "axios";
 import type { IThemeData } from "../../interfaces/IThemeData";
 import { shuffleArray } from "../../utils/shuffleArray";
+import type { RickAndMortyApiResponse } from "../../interfaces/IRickAndMorty";
+import type { AxiosResponse } from "axios";
 
 const API_URL = "https://rickandmortyapi.com/api/character";
 const PAGE_SIZE = 20;
@@ -30,7 +32,9 @@ export async function fetchCharacters(needed: number): Promise<IThemeData[]> {
   const responses = await Promise.all(
     Array.from(selectedPages).map(async (page) => {
       try {
-        return await axios.get(API_URL, { params: { page } });
+        return await axios.get<RickAndMortyApiResponse>(API_URL, {
+          params: { page },
+        });
       } catch (error) {
         console.error(`Failed to fetch page ${page}:`, error);
         return null;
@@ -40,12 +44,13 @@ export async function fetchCharacters(needed: number): Promise<IThemeData[]> {
 
   // Filter out any failed requests
   const validResponses = responses.filter(
-    (res) => res && res.data && res.data.results
+    (res): res is AxiosResponse<RickAndMortyApiResponse> =>
+      res !== null && "data" in res && "results" in res.data
   );
 
   // Extract character data
   const allCharacters: IThemeData[] = validResponses.flatMap((res) =>
-    res!.data.results.map((char: any) => ({
+    res.data.results.map((char) => ({
       id: String(char.id),
       name: char.name,
       imageUrl: char.image,

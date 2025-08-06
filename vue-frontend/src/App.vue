@@ -9,7 +9,7 @@ import { usePlayerStore } from "../src/store/playerStore";
 
 const playerStore = usePlayerStore();
 
-onMounted(() => {
-  playerStore.loadInitialSettings();
+onMounted(async () => {
+  await playerStore.loadInitialSettings();
 });
 </script>

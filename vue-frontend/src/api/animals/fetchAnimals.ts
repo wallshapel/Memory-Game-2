@@ -2,6 +2,7 @@
 import axios from "axios";
 import type { IThemeData } from "../../interfaces/IThemeData";
 import { shuffleArray } from "../../utils/shuffleArray";
+import type { IApiResponse } from "../../interfaces/IRawEntry";
 
 const API_URL =
   "https://fed-team.modyo.cloud/api/content/spaces/animals/types/game/entries";
@@ -36,7 +37,7 @@ export async function fetchAnimals(needed: number): Promise<IThemeData[]> {
     // Concurrently fetch all selected pages
     const responses = await Promise.all(
       Array.from(selectedPages).map((page) =>
-        axios.get(API_URL, {
+        axios.get<IApiResponse>(API_URL, {
           params: {
             per_page: PAGE_SIZE,
             page,
@@ -47,7 +48,7 @@ export async function fetchAnimals(needed: number): Promise<IThemeData[]> {
 
     // Extract name and image URL from each entry
     const allCards: IThemeData[] = responses.flatMap((res) =>
-      res.data.entries.map((entry: any) => ({
+      res.data.entries.map((entry) => ({
         name: entry.meta?.name ?? `Unnamed-${Math.random()}`,
         imageUrl: entry.fields?.image?.url ?? "",
       }))

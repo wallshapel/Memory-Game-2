@@ -10,7 +10,8 @@ import { COUNTRY_CODES } from "../../utils/countryCodes";
  * @returns Array of IThemeData with id, name and imageUrl
  * @throws Error if requested number exceeds available country codes or is invalid
  */
-export async function fetchFlags(needed: number): Promise<IThemeData[]> {
+export function fetchFlags(needed: number): IThemeData[] {
+
   if (needed <= 0) return [];
 
   if (needed > COUNTRY_CODES.length) {
