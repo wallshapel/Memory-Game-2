@@ -68,12 +68,13 @@ const emitConfirm = () => emit('confirm')
 const handleClose = () => emit('update:modelValue', false)
 
 // Focus the action button whenever the dialog is opened
-const actionButton = ref<any>(null)
+const actionButton = ref<HTMLElement | null>(null)
+
 watch(
   () => props.modelValue,
   (isOpen) => {
     if (isOpen)
-      nextTick(() => actionButton.value?.$el?.focus())
+      void nextTick(() => actionButton.value?.focus())
   }
 )
 </script>

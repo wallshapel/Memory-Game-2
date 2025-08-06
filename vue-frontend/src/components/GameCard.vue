@@ -1,6 +1,6 @@
-<!-- src/components/Card.vue -->
+<!-- src/components/GameCard.vue -->
 <style scoped>
-/* ---- Card Flipping and Focus Styles ---- */
+/* ---- GameCard Flipping and Focus Styles ---- */
 
 .card-inner {
     width: 100%;
@@ -10,7 +10,7 @@
     position: relative;
 }
 
-/* Card flips on Y axis when flipped */
+/* GameCard flips on Y axis when flipped */
 .card.flipped .card-inner {
     transform: rotateY(180deg);
 }
@@ -96,7 +96,7 @@
 
 <script setup lang="ts">
 /**
- * Card.vue
+ * GameCard.vue
  * - Displays a single card for the memory game.
  * - Handles animation, audio feedback, and click/focus interaction.
  */

@@ -36,8 +36,8 @@
 
       <!-- Main Game UI -->
       <v-container class="d-flex flex-column align-center justify-center flex-wrap" fluid style="min-height: 100vh">
-        <Chronometer ref="chronometerRef" />
-        <Board />
+        <GameChronometer ref="chronometerRef" />
+        <GameBoard />
         <Scoreboard />
         <GameResultModal />
       </v-container>
@@ -58,8 +58,8 @@ import type { DIFFICULTY_LEVELS } from '../constants/assets'
 
 // Dynamic imports for modals and components
 const GameSettingsModal = defineAsyncComponent(() => import('../components/GameSettingsModal.vue'))
-import Chronometer from '../components/Chronometer.vue'
-import Board from '../components/Board.vue'
+import GameChronometer from '../components/GameChronometer.vue'
+import GameBoard from '../components/GameBoard.vue'
 import Scoreboard from '../components/Scoreboard.vue'
 const GameResultModal = defineAsyncComponent(() => import('../components/GameResultModal.vue'))
 

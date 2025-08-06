@@ -1,4 +1,4 @@
-<!-- src/components/Chronometer.vue -->
+<!-- src/components/GameChronometer.vue -->
 <style scoped>
 .chronometer {
     font-size: 30px;
@@ -10,7 +10,7 @@
 
 <template>
     <!--
-      Chronometer component
+      GameChronometer component
       - Displays the formatted game time as a stopwatch.
       - Updates reactively with the game store.
     -->
@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 /**
- * Chronometer.vue
+ * GameChronometer.vue
  * - Shows the elapsed or remaining game time.
  * - Reads its data reactively from game store (Pinia).
  */

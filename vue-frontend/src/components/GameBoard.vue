@@ -1,4 +1,4 @@
-<!-- src/components/Board.vue -->
+<!-- src/components/GameBoard.vue -->
 <style scoped>
 .noselect {
     user-select: none;
@@ -16,18 +16,18 @@
     <!--
       Renders the card board as a CSS grid, dynamically sized based on window width and number of cards.
       - In keyboard mode, disables mouse input for accessibility and shows focus on the selected card.
-      - Each card is represented by the Card component.
+      - Each card is represented by the GameCard component.
     -->
     <div v-if="game.cards.length > 0" :style="gridStyle" class="noselect"
         :class="{ 'disable-mouse': store.controlMethod === 'keyboard' }" @mousedown.prevent @selectstart.prevent>
-        <Card v-for="(card, index) in game.cards" :key="card.id" :card="card" :width="cardWidth" :height="cardHeight"
+        <GameCard v-for="(card, index) in game.cards" :key="card.id" :card="card" :width="cardWidth" :height="cardHeight"
             :isFocused="store.controlMethod === 'keyboard' && game.cardsAreReady && index === game.focusedIndex" />
     </div>
 </template>
 
 <script setup lang="ts">
 /**
- * Board.vue
+ * GameBoard.vue
  * Renders the game board using a CSS grid and manages keyboard navigation.
  * Handles card focus and input for both mouse and keyboard users.
  */
@@ -36,14 +36,14 @@ import { ref, computed, nextTick, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useGameStore } from '../store/gameStore'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
-import Card from './Card.vue'
+import GameCard from './GameCard.vue'
 import { BOARD_GAP, BREAKPOINTS, DEFAULT_CARDS_SIZE, GAME_EFFECTS } from '../constants/assets'
 
 const game = useGameStore()
 const store = usePlayerStore()
 const audio = useAudioStore()
 
-// Card size based on screen width
+// GameCard size based on screen width
 const cardWidth = ref(DEFAULT_CARDS_SIZE.width)
 const cardHeight = ref(DEFAULT_CARDS_SIZE.height)
 
