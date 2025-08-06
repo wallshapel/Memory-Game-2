@@ -56,7 +56,7 @@
  * - Shows fireworks and "New Record" banner if time attack record beaten.
  * - Allows quick navigation to new game, menu, or records.
  */
-import { ref, watch, nextTick, computed } from 'vue'
+import { ref, watch, nextTick, computed, type ComponentPublicInstance } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '../store/gameStore'
 import { FIREWORK_GIF } from '../constants/assets'
@@ -65,7 +65,7 @@ const game = useGameStore()
 const router = useRouter()
 
 // Ref for auto-focus on primary button
-const restartButton = ref<HTMLElement | null>(null)
+const restartButton = ref<ComponentPublicInstance | null>(null)
 
 /**
  * Calculates the time used for this session.
@@ -137,7 +137,7 @@ watch(
     (visible) => {
         if (visible) {
             void nextTick(() => {
-                restartButton.value?.focus()
+                restartButton.value?.$el?.focus()
             })
         }
     }

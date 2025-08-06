@@ -38,7 +38,7 @@
       <v-container class="d-flex flex-column align-center justify-center flex-wrap" fluid style="min-height: 100vh">
         <GameChronometer ref="chronometerRef" />
         <GameBoard />
-        <Scoreboard />
+        <GameScoreboard />
         <GameResultModal />
       </v-container>
     </v-main>
@@ -60,7 +60,7 @@ import type { DIFFICULTY_LEVELS } from '../constants/assets'
 const GameSettingsModal = defineAsyncComponent(() => import('../components/GameSettingsModal.vue'))
 import GameChronometer from '../components/GameChronometer.vue'
 import GameBoard from '../components/GameBoard.vue'
-import Scoreboard from '../components/Scoreboard.vue'
+import GameScoreboard from '../components/GameScoreboard.vue'
 const GameResultModal = defineAsyncComponent(() => import('../components/GameResultModal.vue'))
 
 // Stores
