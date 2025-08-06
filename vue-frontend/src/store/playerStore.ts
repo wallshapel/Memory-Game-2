@@ -74,20 +74,20 @@ export const usePlayerStore = defineStore("player", {
       try {
         const settings = await getLatestUserSettings();
         if (!settings) throw new Error("No settings found");
-        await this.loadFromSettings(settings);
+        this.loadFromSettings(settings);
         this.isLoaded = true;
-      } catch (e) {
-        await this.resetToDefaults();
+      } catch {
+        this.resetToDefaults();
         this.isLoaded = true;
       }
     },
 
     async loadUserSettingsByName(name: string) {
       const settings = await getUserSettingsByName(name);
-      await this.loadFromSettings(settings);
+      this.loadFromSettings(settings);
     },
 
-    async loadFromSettings(settings: IUserSettings) {
+    loadFromSettings(settings: IUserSettings) {
       this.name = settings.name;
       this.difficulty = settings.difficulty as keyof typeof DIFFICULTY_LEVELS;
       this.theme = settings.theme as keyof typeof GAME_THEMES;
@@ -107,7 +107,7 @@ export const usePlayerStore = defineStore("player", {
       });
     },
 
-    async resetToDefaults() {
+    resetToDefaults() {
       this.name = "";
       this.difficulty = 0;
       this.theme = 0;

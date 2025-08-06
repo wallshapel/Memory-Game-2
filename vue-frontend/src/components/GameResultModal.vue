@@ -137,7 +137,8 @@ watch(
     (visible) => {
         if (visible) {
             void nextTick(() => {
-                restartButton.value?.$el?.focus()
+                const el = restartButton.value?.$el as HTMLElement | undefined
+                el?.focus()
             })
         }
     }

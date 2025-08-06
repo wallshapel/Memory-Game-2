@@ -191,7 +191,7 @@ export const useGameStore = defineStore("game", () => {
     audioStore.stopAllAudio();
 
     resetChronometer();
-    initializeGame();
+    void initializeGame();
   }
 
   /**
@@ -229,7 +229,7 @@ export const useGameStore = defineStore("game", () => {
       audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS);
       successCount.value++;
       resetSelection();
-      checkWin();
+      void checkWin();
     } else {
       audioStore.playEffect(GAME_EFFECTS.EFFECT_ERROR);
       mistakesMade.value++;
@@ -263,7 +263,7 @@ export const useGameStore = defineStore("game", () => {
   }
 
   // Watch failCount and trigger Game Over after delay if reached.
-  watch(failCount, async (newVal) => {
+  watch(failCount, (newVal) => {
     const failCondition = isCountdownMode.value
       ? newVal < 0
       : newVal >= maxFails.value;
