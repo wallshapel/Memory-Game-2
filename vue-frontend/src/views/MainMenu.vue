@@ -35,6 +35,7 @@ import { useRouter } from 'vue-router'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
 import { GAME_EFFECTS } from '../constants/assets'
+import type { ComponentPublicInstance } from 'vue'
 
 const AlertModal = defineAsyncComponent(() => import('../components/AlertModal.vue'))
 
@@ -43,61 +44,63 @@ const playerStore = usePlayerStore()
 const audioStore = useAudioStore()
 
 const showModal = ref(false)
-const playButton = ref<any>(null)
-const settingsButton = ref<any>(null)
-const recordsButton = ref<any>(null)
+const playButton = ref<ComponentPublicInstance | null>(null)
+const settingsButton = ref<ComponentPublicInstance | null>(null)
+const recordsButton = ref<ComponentPublicInstance | null>(null)
 const buttons = [playButton, settingsButton, recordsButton]
 let focusedIndex = 0
 
-// Navigates to the Records view
 const handleRecords = () => {
   audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-  router.push('/records')
+  void router.push('/records').catch(() => { })
 }
 
-// Handles Play button: checks if name exists before proceeding
 const handlePlay = () => {
   audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
   if (!playerStore.name.trim())
     showModal.value = true
   else
-    router.push('/game')
+    void router.push('/game').catch(() => { })
 }
 
-// Navigates to Settings view
 const handleOptions = () => {
   audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-  router.push('/config')
+  void router.push('/config').catch(() => { })
 }
 
-// Handles mouse hover to focus and play sound
 const handleHover = (index: number) => {
   focusedIndex = index
-  buttons[focusedIndex].value?.$el?.focus()
+  const el = buttons[focusedIndex].value
+  const htmlEl = el?.$el as HTMLElement | null
+  htmlEl?.focus?.()
   audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
 }
 
-// Called by the profile modal to redirect to Profile config
 const goToProfile = () => {
   showModal.value = false
-  router.push('/config/profile')
+  void router.push('/config/profile').catch(() => { })
 }
 
-// Handles keyboard navigation for menu
 function handleKeydown(e: KeyboardEvent) {
   if (e.key === 'ArrowDown') {
     focusedIndex = (focusedIndex + 1) % buttons.length
-    buttons[focusedIndex].value?.$el?.focus()
+    const el = buttons[focusedIndex].value
+    const htmlEl = el?.$el as HTMLElement | null
+    htmlEl?.focus?.()
     audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
     e.preventDefault()
   } else if (e.key === 'ArrowUp') {
     focusedIndex = (focusedIndex - 1 + buttons.length) % buttons.length
-    buttons[focusedIndex].value?.$el?.focus()
+    const el = buttons[focusedIndex].value
+    const htmlEl = el?.$el as HTMLElement | null
+    htmlEl?.focus?.()
     audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
     e.preventDefault()
   } else if (e.key === 'Enter') {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-    buttons[focusedIndex].value?.$el?.click()
+    const el = buttons[focusedIndex].value
+    const htmlEl = el?.$el as HTMLElement | null
+    htmlEl?.click?.()
     e.preventDefault()
   }
 }
@@ -105,7 +108,6 @@ function handleKeydown(e: KeyboardEvent) {
 onMounted(() => {
   audioStore.stopAllAudio()
 
-  // Wait for playerStore.isLoaded to be true to play the correct background music
   watch(
     () => playerStore.isLoaded,
     (loaded) => {
@@ -115,9 +117,11 @@ onMounted(() => {
     { immediate: true }
   )
 
-  nextTick(() => {
+  void nextTick(() => {
     focusedIndex = 0
-    playButton.value?.$el?.focus()
+    const el = playButton.value
+    const htmlEl = el?.$el as HTMLElement | null
+    htmlEl?.focus?.()
   })
 
   window.addEventListener('keydown', handleKeydown)

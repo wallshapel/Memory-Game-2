@@ -32,6 +32,7 @@ import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
 import { GAME_EFFECTS } from '../constants/assets'
 import { checkUserExists } from '../api/backend/userSettings'
+import type { ComponentPublicInstance } from 'vue'
 
 const store = usePlayerStore()
 const audioStore = useAudioStore()
@@ -40,13 +41,13 @@ const router = useRouter()
 const name = ref(store.name || "")
 const statusMessage = ref<string | null>(null)
 
-const nameInput = ref<any>(null)
-const saveBtn = ref<any>(null)
-const backBtn = ref<any>(null)
+const nameInput = ref<ComponentPublicInstance | null>(null)
+const saveBtn = ref<ComponentPublicInstance | null>(null)
+const backBtn = ref<ComponentPublicInstance | null>(null)
 
 const elements = [nameInput, saveBtn, backBtn]
 let focusedIndex = 0
-let statusTimeoutId: number | null = null
+let statusTimeoutId: ReturnType<typeof setTimeout> | null = null
 
 const isNameValid = computed(() => {
     const trimmed = (name.value ?? "").trim()
@@ -65,7 +66,7 @@ const handleSave = async () => {
         await store.loadUserSettingsByName(trimmedName)
         statusMessage.value = "✔ User loaded"
     } else {
-        await store.resetToDefaults()
+        store.resetToDefaults()
         store.setName(trimmedName)
         await store.saveToBackend()
         statusMessage.value = "✔ New user created"
@@ -80,13 +81,13 @@ const handleSave = async () => {
 
 const handleBack = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-    router.push('/config')
+    void router.push('/config').catch(() => { })
 }
 
 const handleEnter = (event: KeyboardEvent) => {
     if (focusedIndex === 0 && isNameValid.value) {
         event.preventDefault()
-        handleSave()
+        void handleSave()
     }
 }
 
@@ -101,9 +102,9 @@ const handleKeydown = (e: KeyboardEvent) => {
         e.preventDefault()
     } else if (e.key === 'Enter') {
         if (focusedIndex === 0 && isNameValid.value)
-            handleSave()
+            void handleSave()
         else if (focusedIndex === 1)
-            handleSave()
+            void handleSave()
         else if (focusedIndex === 2)
             handleBack()
         e.preventDefault()
@@ -119,13 +120,18 @@ const focusElement = (index: number) => {
 
     focusedIndex = index
     if (index === 0) {
-        const input = el.$el?.querySelector('input') as HTMLInputElement | null
-        if (input) {
+        // CAST $el to HTMLElement for querySelector
+        const htmlEl = (el.$el as HTMLElement | null)
+        const input = htmlEl ? htmlEl.querySelector('input') : null
+        if (input instanceof HTMLInputElement) {
             input.focus()
             input.select()
         }
-    } else
-        el.$el?.focus?.()
+    } else {
+        // CAST $el to HTMLElement for focus
+        const htmlEl = (el.$el as HTMLElement | null)
+        htmlEl?.focus?.()
+    }
     audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
 }
 
@@ -133,13 +139,15 @@ const focusElement = (index: number) => {
 const handleHover = (index: number) => {
     if (focusedIndex !== index) {
         focusedIndex = index
-        elements[focusedIndex].value?.$el?.focus?.()
+        const el = elements[focusedIndex].value
+        const htmlEl = el?.$el as HTMLElement | null
+        htmlEl?.focus?.()
         audioStore.playEffect(GAME_EFFECTS.EFFECT_OVER)
     }
 }
 
 onMounted(() => {
-    nextTick(() => {
+    void nextTick(() => {
         focusElement(0)
     })
     window.addEventListener('keydown', handleKeydown)

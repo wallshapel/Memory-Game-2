@@ -37,6 +37,6 @@ const audioStore = useAudioStore()
 
 function startGame() {
   audioStore.playMusic()
-  router.push('/menu')
+  void router.push('/menu')
 }
 </script>

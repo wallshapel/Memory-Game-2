@@ -115,7 +115,7 @@ const formatTime = (ms: number): string => {
  */
 const goBack = () => {
     audioStore.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-    router.push('/menu')
+    void router.push('/menu')
 }
 
 /**

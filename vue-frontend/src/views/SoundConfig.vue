@@ -55,18 +55,19 @@ import {
   GAME_EFFECTS
 } from '../constants/assets'
 import type { BackgroundMusicIndex } from '../store/audioStore'
+import type { ComponentPublicInstance } from 'vue'
 
 const router = useRouter()
 const store = useAudioStore()
 const playerStore = usePlayerStore()
 
-// References for keyboard focus management
-const musicSelect = ref<any>(null)
-const musicSwitch = ref<any>(null)
-const musicSlider = ref<any>(null)
-const effectsSwitch = ref<any>(null)
-const effectsSlider = ref<any>(null)
-const backBtn = ref<any>(null)
+// Refs tipados
+const musicSelect = ref<ComponentPublicInstance | null>(null)
+const musicSwitch = ref<ComponentPublicInstance | null>(null)
+const musicSlider = ref<ComponentPublicInstance | null>(null)
+const effectsSwitch = ref<ComponentPublicInstance | null>(null)
+const effectsSlider = ref<ComponentPublicInstance | null>(null)
+const backBtn = ref<ComponentPublicInstance | null>(null)
 
 let focusedIndex = -1
 const MUSIC_SELECT_INDEX = 0
@@ -75,26 +76,24 @@ const EFFECTS_SWITCH_INDEX = 3
 const BACK_BTN_INDEX = 5
 
 const getFocusableElements = () => [
-  () => musicSelect.value?.$el?.querySelector('input') ?? null,
-  () => musicSwitch.value?.$el?.querySelector('input[type="checkbox"]') ?? null,
-  () => musicSlider.value?.$el?.querySelector('.v-slider-thumb') ?? null,
-  () => effectsSwitch.value?.$el?.querySelector('input[type="checkbox"]') ?? null,
-  () => effectsSlider.value?.$el?.querySelector('.v-slider-thumb') ?? null,
-  () => backBtn.value?.$el ?? null
+  () => (musicSelect.value?.$el as HTMLElement | null)?.querySelector('input') ?? null,
+  () => (musicSwitch.value?.$el as HTMLElement | null)?.querySelector('input[type="checkbox"]') ?? null,
+  () => (musicSlider.value?.$el as HTMLElement | null)?.querySelector('.v-slider-thumb') ?? null,
+  () => (effectsSwitch.value?.$el as HTMLElement | null)?.querySelector('input[type="checkbox"]') ?? null,
+  () => (effectsSlider.value?.$el as HTMLElement | null)?.querySelector('.v-slider-thumb') ?? null,
+  () => backBtn.value?.$el as HTMLElement | null ?? null
 ]
 
 const focusElements = getFocusableElements()
-// Focuses the current element by index
 const focusElement = (index: number) => {
   const target = focusElements[index]?.()
-  if (target) {
+  if (target instanceof HTMLElement) {
     target.focus()
     focusedIndex = index
     store.playEffect(GAME_EFFECTS.EFFECT_OVER)
   }
 }
 
-// Store bindings
 const { musicVolume, effectsMuted, effectsVolume } = storeToRefs(store)
 
 const musicMuted = computed({
@@ -117,35 +116,30 @@ const musicTracks = computed<Array<{ value: BackgroundMusicIndex; title: string 
   }))
 )
 
-// Plays and previews the currently selected background music
 const playSelectedMusic = () => {
   const file = store.getMusicFileFromKey(store.musicTrack)
   store.playAndSetBgMusic(file, musicVolume.value, musicMuted.value)
 }
 
-// Updates volume of currently playing background music
 const onVolumeChange = () => {
   if (store.bgMusicInstance)
     store.bgMusicInstance.volume = musicVolume.value / 100
 }
 
-// Previews the effects volume change by playing a "volume" sound
 const onEffectsVolumeChange = () => {
   store.playEffect(GAME_EFFECTS.EFFECT_OVER)
   if (!effectsMuted.value) {
     const preview = new Audio(`${BASE_PATH_AUDIO_RESOURCES.EFFECTS_PATH}${EFFECTS_VOLUME}`)
     preview.volume = effectsVolume.value / 100
-    preview.play().catch(() => { })
+    void preview.play().catch(() => { })
   }
 }
 
-// Handles going back to the config menu
 const handleBack = () => {
   store.playEffect(GAME_EFFECTS.EFFECT_SUCCESS)
-  router.push('/config')
+  void router.push('/config').catch(() => { })
 }
 
-// Keyboard navigation and quick toggle of mute state
 const handleKeyDown = (e: KeyboardEvent) => {
   if (e.key === 'Escape') return handleBack()
 
@@ -169,7 +163,6 @@ const handleKeyDown = (e: KeyboardEvent) => {
   }
 }
 
-// Keyboard navigation for the background music select
 const handleMusicSelectKey = (e: KeyboardEvent) => {
   if (['ArrowLeft', 'ArrowRight'].includes(e.key)) {
     e.preventDefault()
@@ -184,21 +177,19 @@ const handleMusicSelectKey = (e: KeyboardEvent) => {
   }
 }
 
-// Updates the focused index when focus changes by mouse/tab
 const handleFocusIn = () => {
   const activeElement = document.activeElement
   const idx = focusElements.findIndex(getter => {
     const el = getter()
-    return el === activeElement || el?.contains(activeElement)
+    return el === activeElement || (el && el.contains(activeElement))
   })
   if (idx !== -1 && idx !== focusedIndex) focusedIndex = idx
 }
 
-// Set initial focus and setup event listeners on mount
 onMounted(() => {
   setTimeout(() => focusElement(MUSIC_SELECT_INDEX), 100)
-  nextTick(() => {
-    const input = musicSelect.value?.$el?.querySelector('input')
+  void nextTick(() => {
+    const input = (musicSelect.value?.$el as HTMLElement | null)?.querySelector('input')
     if (input) {
       input.addEventListener(
         'keydown',
@@ -215,7 +206,6 @@ onMounted(() => {
   store.playAndSetBgMusic(store.getMusicFileFromKey(store.musicTrack), musicVolume.value, musicMuted.value)
 })
 
-// Clean up listeners and stop music on unmount
 onBeforeUnmount(() => {
   store.bgMusicInstance?.pause()
   store.bgMusicInstance = null
@@ -223,7 +213,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('focusin', handleFocusIn)
 })
 
-// Auto-save settings to backend whenever relevant properties change
 watch(
   [
     () => store.musicTrack,
