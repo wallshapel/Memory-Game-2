@@ -61,6 +61,7 @@ const GameSettingsModal = defineAsyncComponent(() => import('../components/GameS
 import GameChronometer from '../components/GameChronometer.vue'
 import GameBoard from '../components/GameBoard.vue'
 import GameScoreboard from '../components/GameScoreboard.vue'
+import type { ChronometerComponent } from '../interfaces/IChronometerComponent'
 const GameResultModal = defineAsyncComponent(() => import('../components/GameResultModal.vue'))
 
 // Stores
@@ -68,10 +69,9 @@ const game = useGameStore()
 const audioStore = useAudioStore()
 const playerStore = usePlayerStore()
 
-const chronometerRef = ref()
+const chronometerRef = ref<ChronometerComponent | null>(null)
 const route = useRoute()
 
-// Time attack mode logic
 const isTimeAttack = computed(() => route.query.timeAttack === '1')
 const wasTimeAttack = ref(false)
 
@@ -82,10 +82,6 @@ const timeLimit = computed(() => {
 
 let originalSettings: IUserSettings | null = null
 
-/**
- * Plays the background music for gameplay using the central audio function,
- * passing correct parameters for normal vs. countdown mode.
- */
 function playGameMusic() {
   audioStore.playBackgroundForView({
     type: 'fixed',
@@ -101,12 +97,10 @@ onMounted(async () => {
 
   window.addEventListener('keydown', onKeydown)
 
-  // Play game background music
   playGameMusic()
 
   // Handle time attack config
   if (isTimeAttack.value && timeLimit.value) {
-    // Backup current player settings before applying time attack config
     if (playerStore.name) {
       try {
         const data = await getUserSettingsByName(playerStore.name)
@@ -116,7 +110,6 @@ onMounted(async () => {
       }
     }
 
-    // Apply time attack settings
     const cards = route.query.totalCards
     const difficulty = route.query.difficulty
     const mistakes = route.query.mistakes
@@ -129,15 +122,12 @@ onMounted(async () => {
         playerStore.difficulty = parsedDiff as keyof typeof DIFFICULTY_LEVELS
     }
     game.setCountdownMode(timeLimit.value, parsedMistakes, timeLimit.value)
-    chronometerRef.value?.startCountdown?.(timeLimit.value)
+    chronometerRef.value?.startCountdown(timeLimit.value)
   }
 
-  game.initializeGame()
+  void game.initializeGame()
 })
 
-/**
- * Toggles the game settings modal when Escape is pressed.
- */
 function onKeydown(e: KeyboardEvent) {
   if (e.key === 'Escape') game.showSettingsModal = !game.showSettingsModal
 }

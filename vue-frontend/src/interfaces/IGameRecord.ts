@@ -17,3 +17,7 @@ export interface ISaveRecord {
   mistakes: number;
   time: number;
 }
+
+export interface IGameRecordWithId extends IGameRecord {
+  _id: string
+}

@@ -76,16 +76,18 @@ import { getBestRecordForUser, getTopRecords } from '../api/backend/records'
 import { usePlayerStore } from '../store/playerStore'
 import { useAudioStore } from '../store/audioStore'
 import { GAME_EFFECTS, OTHER_MUSICAL_BACKGROUNDS } from '../constants/assets'
+import type { IGameRecordWithId } from '../interfaces/IGameRecord'
 
 const router = useRouter()
 const route = useRoute()
-const records = ref<any[]>([])
+const records = ref<IGameRecordWithId[]>([])
 const playerStore = usePlayerStore()
-const myBestRecord = ref<any>(null)
+const myBestRecord = ref<IGameRecordWithId | null>(null)
 const selectableIndex = ref<number | null>(null)
 
 const audioStore = useAudioStore()
-const backButton = ref<any>(null)
+import type { ComponentPublicInstance } from 'vue'
+const backButton = ref<HTMLElement | ComponentPublicInstance | null>(null)
 
 /**
  * Checks if the record at index is selectable for the time attack.
@@ -121,8 +123,8 @@ const goBack = () => {
 /**
  * Starts a time attack challenge based on the selected record.
  */
-const startTimeAttack = (record: any) => {
-    router.push({
+const startTimeAttack = (record: IGameRecordWithId) => {
+    void router.push({
         path: '/game',
         query: {
             timeAttack: '1',
@@ -151,15 +153,15 @@ const playRecordsBackground = () => {
  */
 const loadRecords = async () => {
     try {
-        records.value = await getTopRecords()
+        records.value = await getTopRecords() as IGameRecordWithId[]
     } catch (err) {
         console.error('Failed to load records:', err)
     }
 
     if (playerStore.name) {
         try {
-            myBestRecord.value = await getBestRecordForUser(playerStore.name)
-            const idx = records.value.findIndex(r => r._id === myBestRecord.value._id)
+            myBestRecord.value = await getBestRecordForUser(playerStore.name) as IGameRecordWithId
+            const idx = records.value.findIndex(r => r._id === myBestRecord.value!._id)
             selectableIndex.value = idx >= 0 ? idx : null
         } catch {
             myBestRecord.value = null
@@ -172,18 +174,29 @@ const loadRecords = async () => {
 watch(
     () => route.fullPath,
     (newPath) => {
-        if (newPath === '/records') loadRecords()
+        if (newPath === '/records') void loadRecords()
     },
     { immediate: true }
 )
 
 onMounted(() => {
     if (route.path === '/records') playRecordsBackground()
-    nextTick(() => {
-        backButton.value?.$el?.focus()
+    void nextTick(() => {
+        const el = backButton.value
+        if (el instanceof HTMLElement && typeof el.focus === 'function')
+            el.focus()
+        else if (
+            el &&
+            typeof el === 'object' &&
+            '$el' in el &&
+            el.$el instanceof HTMLElement &&
+            typeof el.$el.focus === 'function'
+        )
+            el.$el.focus()
     })
     window.addEventListener('keydown', handleKeydown)
 })
+
 
 /**
  * Handles Escape key to return to menu.
