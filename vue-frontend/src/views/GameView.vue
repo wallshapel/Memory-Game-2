@@ -122,7 +122,6 @@ onMounted(async () => {
         playerStore.difficulty = parsedDiff as keyof typeof DIFFICULTY_LEVELS
     }
     game.setCountdownMode(timeLimit.value, parsedMistakes, timeLimit.value)
-    chronometerRef.value?.startCountdown(timeLimit.value)
   }
 
   void game.initializeGame()
